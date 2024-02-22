@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.handsome.dao.mapper.FlinkTagTaskUdfRelationMapper">
+    <sql id="baseSql">
+        id, udf_id, draft_tag_type,create_time, update_time
+    </sql>
+    <insert id="batchInsert">
+        insert into dpline_flink_tag_task_udf_relation (
+            <include refid="baseSql"/>
+        )
+        values
+        <foreach collection="flinkTaskUdfRelations" item="flinkTaskUdf" separator=",">
+            (#{flinkTaskUdf.id},#{flinkTaskUdf.udfId},#{flinkTaskUdf.draftTagType},#{flinkTaskUdf.createTime},#{flinkTaskUdf.updateTime})
+        </foreach>
+    </insert>
+
+    <select id="selectAllById" resultType="com.handsome.dao.entity.FlinkTagTaskUdfRelation">
+        select <include refid="baseSql"/> from dpline_flink_tag_task_udf_relation where id=#{id}
+    </select>
+
+    <delete id="batchDeleteByIdAndUdfId">
+        delete from dpline_flink_tag_task_udf_relation
+        where id=#{id} and udf_id in (
+        <foreach collection="udfIds" item="udfId" open="(" close=")" separator=",">
+            #{udfId}
+        </foreach>
+        ) and draft_tag_type=#{draftTagType}
+    </delete>
+
+</mapper>

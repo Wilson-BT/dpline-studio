@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dpline.dao.mapper.DplineJobOperateLogMapper">
+    <sql id="baseSql">
+        operate_type, operate_timestamp, operate_log_path,trace_id,job_id
+    </sql>
+    <select id="queryJobOperateHistory" resultType="com.dpline.dao.entity.DplineJobOperateLog">
+        select
+            djol.id,
+            <include refid="baseSql"/>,
+            du.user_name as create_user,
+            djol.create_time,
+            djol.update_time
+        from dpline_job_operate_log djol
+        left join dpline_user du
+        on djol.create_user=du.user_code
+        where job_id=${criteria.jobId}
+        <include refid="orderByClauseInfo"></include>
+    </select>
+    <select id="queryLastOperateTime" resultType="long">
+        select
+            operate_timestamp
+        from dpline_job_operate_log
+        where job_id = #{jobId}
+        order by operate_timestamp desc limit 1
+    </select>
+    <select id="getLastStartTime" resultType="long">
+        select unix_timestamp(max(create_time)) * 1000
+        from dpline_job_operate_log
+        where job_id=#{jobId}
+          and operate_type='START'
+    </select>
+    <sql id="orderByClauseInfo">
+        <if test="criteria.orderByClauses != null">
+            <trim prefix=" ORDER  BY " suffix="  " suffixOverrides=",">
+                <foreach collection="criteria.orderByClauses" item="orderByObj">
+                    <if test="orderByObj.field != null and orderByObj.field != ''">
+                        <if test="orderByObj.orderByMode == 0">
+                            djol.${orderByObj.field} ASC ,
+                        </if>
+                        <if test="orderByObj.orderByMode != 0">
+                            djol.${orderByObj.field} DESC ,
+                        </if>
+                    </if>
+                </foreach>
+            </trim>
+        </if>
+    </sql>
+</mapper>

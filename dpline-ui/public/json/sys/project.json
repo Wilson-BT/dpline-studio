@@ -1,0 +1,52 @@
+{
+  "code": 0,
+  "msg": "success",
+  "data": [
+    {
+      "id": 1,
+      "projectNo": "project1",
+      "label": "Project 1",
+      "children": [
+        {
+          "id": 2,
+          "projectNo": "project1",
+          "label": "task 1-1"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "projectNo": "project2",
+      "label": "Project 2",
+      "children": [
+        {
+          "id": 4,
+          "projectNo": "project2",
+          "label": "task 2-1"
+        },
+        {
+          "id": 5,
+          "projectNo": "project2",
+          "label": "task 2-2"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "projectNo": "project3",
+      "label": "Project 3",
+      "children": [
+        {
+          "id": 7,
+          "projectNo": "project3",
+          "label": "task 3-1"
+        },
+        {
+          "id": 8,
+          "projectNo": "project3",
+          "label": "task 3-2"
+        }
+      ]
+    }
+  ]
+}

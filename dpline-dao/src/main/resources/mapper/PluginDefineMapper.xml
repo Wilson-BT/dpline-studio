@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.handsome.dao.mapper.PluginDefineMapper">
+    <select id="checkTableExist" resultType="int">
+        select count(*) from information_schema.TABLES where table_name = 'dpline_plugin_define'
+    </select>
+
+    <select id="queryAllPluginDefineList" resultType="com.handsome.dao.entity.PluginDefine">
+        select *
+        from dpline_plugin_define
+        where 1=1
+    </select>
+
+    <select id="queryByPluginType" resultType="com.handsome.dao.entity.PluginDefine">
+        select id,plugin_name,plugin_type,create_time,update_time
+        from dpline_plugin_define
+        where plugin_type = #{pluginType}
+    </select>
+
+    <select id="queryByNameAndType" resultType="com.handsome.dao.entity.PluginDefine">
+        select *
+        from dpline_plugin_define
+        where plugin_name = #{pluginName} and plugin_type = #{pluginType}
+        limit 1
+    </select>
+
+    <select id="queryDetailById" resultType="com.handsome.dao.entity.PluginDefine">
+        select id,plugin_name,plugin_type,plugin_params,create_time,update_time
+        from dpline_plugin_define
+        where id = #{id}
+    </select>
+
+</mapper>

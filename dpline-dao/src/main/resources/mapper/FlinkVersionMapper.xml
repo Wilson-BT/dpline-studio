@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dpline.dao.mapper.FlinkVersionMapper">
+    <sql id="baseSql">
+       id, flink_name, description, flink_path, enabled_flag, real_version, create_time, create_user, update_time, update_user
+    </sql>
+    <sql id="orderByClauseInfo">
+        <if test="criteria.orderByClauses != null">
+            <trim prefix=" ORDER  BY " suffix="  " suffixOverrides=",">
+                <foreach collection="criteria.orderByClauses" item="orderByObj">
+                    <if test="orderByObj.field != null and orderByObj.field != ''">
+                        <if test="orderByObj.orderByMode == 0">
+                            dfv.${orderByObj.field} ASC ,
+                        </if>
+                        <if test="orderByObj.orderByMode != 0">
+                            dfv.${orderByObj.field} DESC ,
+                        </if>
+                    </if>
+                </foreach>
+            </trim>
+        </if>
+    </sql>
+    <resultMap id="BaseResultMap" type="com.dpline.dao.entity.FlinkVersion">
+        <id column="id" jdbcType="BIGINT" property="id" />
+        <result column="flink_name" jdbcType="VARCHAR" property="flinkName" />
+        <result column="description" jdbcType="VARCHAR" property="description" />
+        <result column="flink_path" jdbcType="VARCHAR" property="flinkPath" />
+        <result column="enabled_flag" jdbcType="TINYINT" property="enabledFlag" />
+        <result column="real_version" jdbcType="VARCHAR" property="realVersion" />
+        <result column="create_user" jdbcType="VARCHAR" property="createUser" />
+        <result column="update_user" jdbcType="VARCHAR" property="updateUser" />
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+    </resultMap>
+
+    <select id="list" resultMap="BaseResultMap">
+        select dfv.*
+        from dpline_flink_version dfv
+        <where>
+            <if test="criteria != null">
+                <if test="criteria.vo.flinkName != null and criteria.vo.flinkName != ''">
+                    and dfv.flink_name like concat('%', #{criteria.vo.flinkName, jdbcType=VARCHAR},'%')
+                </if>
+            </if>
+        </where>
+        <include refid="orderByClauseInfo"></include>
+    </select>
+    <select id="queryFlinkVersion" resultMap="BaseResultMap">
+            select <include refid="baseSql"></include> from dpline_flink_version where enabled_flag=1
+    </select>
+    <select id="selectByMotorType" resultType="com.dpline.dao.entity.FlinkVersion">
+        select * from dpline_flink_version
+        where motor_type = #{motorType}
+          and enabled_flag=1
+    </select>
+
+
+</mapper>

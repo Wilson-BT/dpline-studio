@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.handsome.dao.mapper.FlinkTagTaskResRelationMapper">
+    <sql id="baseSql">
+        id, resource_id, draft_tag_type,create_time, update_time
+    </sql>
+    <insert id="batchInsert">
+        insert into dpline_flink_tag_task_res_relation (<include refid="baseSql"/>)
+        values
+        <foreach collection="flinkTaskResourceRelations" item="flinkTaskResource" separator=",">
+            (#{flinkTaskResource.id},#{flinkTaskResource.resourceId},#{flinkTaskResource.createTime},#{flinkTaskResource.updateTime})
+        </foreach>
+    </insert>
+    <select id="selectAllById" resultType="com.handsome.dao.entity.FlinkTagTaskResRelation">
+        select <include refid="baseSql"/> from dpline_flink_tag_task_res_relation where id=#{id}
+    </select>
+    <delete id="batchDeleteByIdAndResId">
+        delete from dpline_flink_tag_task_res_relation
+        where id=#{id} and resource_id in (
+        <foreach collection="resIds" item="resourceId" open="(" close=")" separator=",">
+            #{resourceId}
+        </foreach>
+        ) and draft_tag_type=#{draftTagType}
+    </delete>
+
+    <select id="queryByResId" resultType="com.handsome.dao.entity.FlinkTagTaskResRelation">
+        select <include refid="baseSql"/> from dpline_flink_tag_task_res_relation
+        where resource_id in (
+        <foreach collection="resIds" item="resourceId" open="(" close=")" separator=",">
+            #{resourceId}
+        </foreach>
+        )
+    </select>
+</mapper>

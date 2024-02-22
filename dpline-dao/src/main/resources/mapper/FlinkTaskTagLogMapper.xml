@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.handsome.dao.mapper.FlinkTaskTagLogMapper">
+    <sql id="baseSql">
+        id,task_definition_id,tag_name,description,flink_version_id,project_code,task_type,sql_text,main_jar_path,main_class_name,class_params,
+        create_time,update_time
+    </sql>
+
+    <select id="existSameTagNameInSameTask" resultType="java.lang.Boolean">
+        select 1
+        from dpline_flink_task_tag_log
+        where tag_name=#{tagName} and task_definition_id=#{taskDefinitionId}
+        limit 1
+    </select>
+
+    <select id="queryNameByFlinkVersionId" resultType="java.lang.String">
+        select concat(c.name,'_',b.task_name,'_',a.tag_name) name from
+            dpline_flink_task_tag_log a
+            join dpline_flink_task_definition b
+            join dpline_project c
+        on a.task_definition_id=b.id
+        and a.project_code=c.code
+        where a.flink_version_id=#{flinkVersionId} limit 1
+    </select>
+
+    <select id="queryNameById" resultType="java.lang.String">
+        select concat(c.name,'_',b.task_name,'_',a.tag_name) name from
+            dpline_flink_task_tag_log a
+                join dpline_flink_task_definition b
+                join dpline_project c
+                     on a.task_definition_id=b.id
+                         and a.project_code=c.code
+        where a.id=#{id}
+    </select>
+</mapper>

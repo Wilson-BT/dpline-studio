@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dpline.dao.mapper.ClusterMapper">
+    <sql id="baseSql">
+       id, cluster_name, env_type,cluster_type, cluster_params, enabled_flag, create_time, create_user, update_time, update_user
+    </sql>
+    <sql id="orderByClauseInfo">
+        <if test="criteria.orderByClauses != null">
+            <trim prefix=" ORDER  BY " suffix="  " suffixOverrides=",">
+                <foreach collection="criteria.orderByClauses" item="orderByObj">
+                    <if test="orderByObj.field != null and orderByObj.field != ''">
+                        <if test="orderByObj.orderByMode == 0">
+                            t0.${orderByObj.field} ASC ,
+                        </if>
+                        <if test="orderByObj.orderByMode != 0">
+                            t0.${orderByObj.field} DESC ,
+                        </if>
+                    </if>
+                </foreach>
+            </trim>
+        </if>
+    </sql>
+    <resultMap id="BaseResultMap" type="com.dpline.dao.entity.Cluster">
+        <id column="id" jdbcType="BIGINT" property="id" />
+        <result column="cluster_name" jdbcType="VARCHAR" property="clusterName" />
+        <result column="env_type" jdbcType="VARCHAR" property="envType" />
+        <result column="cluster_type" jdbcType="VARCHAR" property="clusterType" />
+        <result column="cluster_params" jdbcType="VARCHAR" property="clusterParams" />
+        <result column="enabled_flag" jdbcType="TINYINT" property="enabledFlag" />
+        <result column="create_user" jdbcType="VARCHAR" property="createUser" />
+        <result column="update_user" jdbcType="VARCHAR" property="updateUser" />
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+        <result column="refer_project_count" jdbcType="INTEGER" property="referProjectCount" />
+        <result column="refer_user_count" jdbcType="INTEGER" property="referUserCount" />
+    </resultMap>
+
+    <select id="list" resultMap="BaseResultMap">
+        select t0.id,
+            t0.cluster_name,
+            t0.env_type,
+            t0.cluster_type,
+            t0.cluster_params,
+            t0.enabled_flag,
+            t0.create_time,
+            t0.create_user,
+            t0.update_time,
+            t0.update_user,
+            count(distinct t1.user_code) as refer_user_count
+            from dpline_cluster t0
+            left join dpline_cluster_user t1 on t1.cluster_id = t0.id and t1.enabled_flag = 1
+        <where>
+            <if test="criteria != null">
+                <if test="criteria.vo.clusterName != null and criteria.vo.clusterName != ''">
+                    and t0.cluster_name like concat('%', #{criteria.vo.clusterName, jdbcType=VARCHAR},'%')
+                </if>
+            </if>
+        </where>
+            group by t0.id
+        <include refid="orderByClauseInfo"></include>
+    </select>
+    <select id="queryAuthedCluster" resultType="com.dpline.dao.entity.Cluster">
+        select de.id,
+               de.cluster_name,
+               de.env_type,
+               de.cluster_type,
+               de.cluster_params,
+               de.create_time,
+               de.create_user,
+               de.update_time,
+               de.update_user
+        from dpline_cluster de
+        <if test="userCode != null ">
+            join dpline_cluster_user deu on de.id= deu.cluster_id
+        </if>
+        where de.enabled_flag=1
+        <if test="userCode != null ">
+            and user_code=#{userCode}
+        </if>
+        <if test="clusterType != null">
+            and cluster_type=#{clusterType}
+        </if>
+    </select>
+    <select id="queryOnlineCluster" resultType="com.dpline.dao.entity.Cluster">
+        select <include refid="baseSql"/>
+        from dpline_cluster
+        where 1=1
+        <if test="clusterType != null and clusterType != ''">
+            and cluster_type=#{clusterType}
+        </if>
+    </select>
+    <select id="selectByClusterName" resultType="com.dpline.dao.entity.Cluster">
+        select * from dpline_cluster where cluster_name=#{clusterName}
+    </select>
+    <select id="selectByClusterParams" resultType="com.dpline.dao.entity.Cluster">
+        select * from dpline_cluster where cluster_params=#{clusterParams}
+    </select>
+    <select id="selectByClusterParamsAndId" resultType="com.dpline.dao.entity.Cluster">
+        select * from dpline_cluster
+        where cluster_params = #{clusterParams}
+          and id != ${id}
+    </select>
+
+
+</mapper>

@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: ${FLINK_POD_NAME}
+  namespace: ts-flink-prd
+spec:
+  serviceAccount: ts-flink-prd-sa
+  nodeSelector:
+    k8s.wonhigh.cn/role: flink
+  securityContext:
+    privileged: true
+    capabilities:
+      add:
+        - SYS_ADMIN
+        - NET_ADMIN
+  containers:
+    - name: flink-main-container
+      image: ${IMAGE_NAME}
+      imagePullPolicy: Always
+      securityContext:
+        privileged: true
+        capabilities:
+          add:
+            - SYS_ADMIN
+            - NET_ADMIN
+      resources:
+        requests:
+          ephemeral-storage: 1024Mi
+        limits:
+          ephemeral-storage: 1024Mi
+      volumeMounts:
+        - mountPath: /opt/flink/main
+          name: flink-user-jars-hostpath
+        - mountPath: /opt/flink/lib/extended
+          name: flink-extended-jars-hostpath
+  volumes:
+    - name: flink-user-jars-hostpath
+      hostPath:
+        path: ${USER_MAIN_JARS}
+        type: Directory
+    - name: flink-extended-jars-hostpath
+      hostPath:
+        path: ${USER_EXTENDED_JARS}
+        type: Directory

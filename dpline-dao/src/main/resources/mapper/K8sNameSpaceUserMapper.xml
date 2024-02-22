@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.handsome.dao.mapper.K8sNameSpacesUserMapper">
+    <sql id="baseSql">
+        id,user_id,k8s_namespace_id,create_time,update_time
+    </sql>
+    <select id="queryK8sNameSpacesIdListByUserId" resultType="com.handsome.dao.entity.K8sNameSpacesUser">
+        select
+        <include refid="baseSql">
+            <property name="alias" value="rel"/>
+        </include>
+        from dpline_relation_k8s_namespace_user rel
+        join dpline_k8s_namespace ins on rel.k8s_namespace_id = ins.id
+        where 1=1 and ins.effective=1
+        <if test="userId != 0">
+            and user_id=#{userId}
+        </if>
+    </select>
+    <delete id="deleteByk8sNameSpaceId">
+        delete from dpline_relation_k8s_namespace_user
+        where  k8s_namespace_id=#{k8sNamespaceId}
+    </delete>
+
+    <insert id="batchInsert" >
+        insert into table dpline_relation_k8s_namespace_user (<include refid="baseSql"/>) values
+        <foreach collection="K8sNameSpacesUserList" item="K8sNameSpacesUser" separator=",">
+            (#{K8sNameSpacesUser.id},#{K8sNameSpacesUser.userId},#{K8sNameSpacesUser.k8sNameSpaceId},#{K8sNameSpacesUser.createTime},#{K8sNameSpacesUser.updateTime})
+        </foreach>
+    </insert>
+    <delete id="batchRevokeK8sAuths">
+        delete from dpline_relation_k8s_namespace_user
+        where user_id=#{userId} and k8s_namespace_id in
+        <foreach collection="authedK8sIdList" item="authedK8sId" separator="," open="(" close=")">
+            #{authedK8sId}
+        </foreach>
+    </delete>
+</mapper>

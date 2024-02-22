@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.handsome.dao.mapper.FlinkTaskDefinitionMapper">
+    <sql id="baseColumn">
+        id,task_name,description,flink_version_id,project_code,task_type,sql_text,main_jar_path,main_class_name,class_params,resource_ids,udf_ids,
+        create_time,update_time
+    </sql>
+    <select id="existSameFlinkTaskName" resultType="java.lang.Boolean">
+        select 1
+        from dpline_flink_task_definition
+        where task_name=#{taskName} and project_code=#{projectCode}
+        limit 1
+    </select>
+    <select id="queryAllByProjectCode" resultType="com.handsome.dao.entity.FlinkTaskDefinition">
+        select
+        <include refid="baseColumn"/>
+        from dpline_flink_task_definition where project_code=#{projectCode} limit 1
+    </select>
+
+    <select id="queryNameByFlinkVersionId" resultType="java.lang.String">
+        select
+        concat(b.name,'-',a.task_name) taskName
+        from dpline_flink_task_definition a
+            join dpline_project b
+                on a.flink_version_id=#{flinkVersionId}
+                       and a.project_code=b.code where limit 1
+    </select>
+
+
+    <select id="queryNameById" resultType="java.lang.String">
+        select
+            concat(b.name,'_',a.task_name) taskName
+        from dpline_flink_task_definition a
+                 join dpline_project b
+                      on a.id=#{id}
+                          and a.project_code=b.code
+    </select>
+</mapper>

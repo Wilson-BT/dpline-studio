@@ -1,0 +1,47 @@
+package com.handsome.dao.entity;
+
+
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.handsome.common.enums.DraftTagType;
+import lombok.Data;
+
+import java.util.Date;
+
+/**
+ * relation between flink task and resource
+ */
+@TableName("dpline_flink_tag_task_res_relation")
+@Data
+public class FlinkTagTaskResRelation {
+    /**
+     *
+     */
+    @TableId(value = "id")
+    private long id;
+    /**
+     * flink resource Id
+     */
+    @TableField(value = "resource_id")
+    private int resourceId;
+
+    @TableField(value = "draft_tag_type")
+    private DraftTagType draftTagType;
+
+    @TableField(value = "create_time")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private Date createTime;
+
+    /**
+     * update time
+     */
+    @TableField(value = "update_time")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private Date updateTime;
+
+    @TableField(exist = false)
+    private String taskTagName;
+
+}

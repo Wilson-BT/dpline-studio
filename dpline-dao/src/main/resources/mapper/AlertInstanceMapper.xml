@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dpline.dao.mapper.AlertInstanceMapper">
+
+    <sql id="baseSql">
+        ${alisa}.id, ${alisa}.instance_name, ${alisa}.alert_type, ${alisa}.instance_params, ${alisa}.create_time, ${alisa}.update_time,${alisa}.enabled_flag
+    </sql>
+    <select id="queryAllAlertPluginInstanceList"
+            resultType="com.dpline.dao.entity.AlertInstance">
+        select
+        <include refid="baseSql">
+            <property name="alisa" value="dai"/>
+        </include>
+        from dpline_alert_instance dai
+        where 1 = 1 order by update_time desc
+    </select>
+
+    <select id="queryByIds" resultType="com.dpline.dao.entity.AlertInstance">
+        select
+        <include refid="baseSql">
+            <property name="alisa" value="dai"/>
+        </include>
+        from dpline_alert_instance dai
+        where id in
+        <foreach item="item" index="index" collection="ids"
+                 open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+
+    <select id="queryById" resultType="com.dpline.dao.entity.AlertInstance">
+        select
+        <include refid="baseSql">
+            <property name="alisa" value="dai"/>
+        </include>
+        from dpline_alert_instance dai
+        where id=${id}
+    </select>
+
+    <select id="queryByInstanceNamePage" resultType="com.dpline.dao.entity.AlertInstance">
+        select
+        <include refid="baseSql">
+            <property name="alisa" value="dai"/>
+        </include>
+        from dpline_alert_instance dai
+        where 1 = 1
+        <if test="instanceName != null and instanceName != ''">
+            and instance_name like concat('%', #{instanceName}, '%')
+        </if>
+    </select>
+
+    <select id="existInstanceName" resultType="com.dpline.dao.entity.AlertInstance">
+        select *
+        from dpline_alert_instance
+        where instance_name = #{instanceName}
+    </select>
+    <select id="list" resultType="com.dpline.dao.entity.AlertInstance">
+        select
+            <include refid="baseSql">
+                <property name="alisa" value="dai"/>
+            </include>,
+            du.user_name as create_user
+        from
+        dpline_alert_instance dai
+        left join
+        dpline_user du on dai.create_user = du.user_code
+        where 1=1
+        <if test="criteria.vo.instanceName != null">
+            and instance_name like concat ('%',#{criteria.vo.instanceName},'%')
+        </if>
+        <if test="criteria.vo.alertType != null">
+            and alert_type=#{criteria.vo.alertType}
+        </if>
+    </select>
+    <select id="search" resultType="com.dpline.dao.entity.AlertInstance">
+        select * from
+        dpline_alert_instance
+        where 1=1
+        <if test="instanceName != null">
+            and instance_name=#{instanceName}
+        </if>
+        <if test="alertType != null">
+            and alert_type=#{alertType}
+        </if>
+    </select>
+    <sql id="orderByClauseInfo">
+        <if test="criteria.orderByClauses != null">
+            <trim prefix=" ORDER  BY " suffix="  " suffixOverrides=",">
+                <foreach collection="criteria.orderByClauses" item="orderByObj">
+                    <if test="orderByObj.field != null and orderByObj.field != ''">
+                        <if test="orderByObj.orderByMode == 0">
+                            dai.${orderByObj.field} ASC ,
+                        </if>
+                        <if test="orderByObj.orderByMode != 0">
+                            dai.${orderByObj.field} DESC ,
+                        </if>
+                    </if>
+                </foreach>
+            </trim>
+        </if>
+    </sql>
+
+</mapper>

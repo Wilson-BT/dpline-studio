@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.handsome.dao.mapper.AccessTokenMapper">
+    <select id="selectAccessTokenPage" resultType="com.handsome.dao.entity.AccessToken">
+        select t.id, t.user_id, t.token, t.expire_time, t.create_time, t.update_time, u.user_name
+        from dpline_access_token t
+        left join dpline_user u on t.user_id = u.id
+        where 1 = 1
+        <if test="userName != null and userName != ''">
+            and u.user_name like concat ('%', #{userName}, '%')
+        </if>
+        <if test="userId != 0">
+            and t.user_id = #{userId}
+        </if>
+        order by t.update_time desc
+    </select>
+
+    <select id="queryAccessTokenByUser" resultType="com.handsome.dao.entity.AccessToken">
+        select id, user_id, token, expire_time, create_time, update_time
+        from dpline_access_token
+        where user_id = #{userId}
+    </select>
+
+    <delete id="deleteAccessTokenByUserId">
+        delete from dpline_access_token
+        where user_id = #{userId}
+    </delete>
+</mapper>

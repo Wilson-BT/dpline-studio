@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dpline.dao.mapper.DockerImageMapper">
+    <sql id="baseSql">
+        id,
+        image_name,
+        short_name,
+        register_address,
+        register_password,
+        register_user,
+        motor_type,
+        motor_version_id,
+        enabled_flag,
+        description,
+        create_time,
+        update_time,
+        create_user,
+        update_user
+    </sql>
+    <select id="existSameImageName" resultType="java.lang.Boolean">
+        select 1 from dpline_docker_image where short_name=#{shortName} limit 1
+    </select>
+
+    <select id="queryAllImages" resultType="com.dpline.dao.entity.DockerImage">
+        select ddi.*,dfv.real_version as motor_real_version
+        from dpline_docker_image ddi
+        left join dpline_flink_version dfv
+        on ddi.motor_version_id = dfv.id
+        where 1=1
+        <choose>
+            <when test = "criteria.vo.shortName != null and criteria.vo.shortName != ''">
+                and ddi.short_name like concat('%',#{criteria.vo.shortName},'%')
+            </when>
+        </choose>
+        <include refid="orderByClauseInfo"></include>
+    </select>
+
+    <select id="listDockerImage" resultType="com.dpline.dao.entity.DockerImage">
+        select *
+        from dpline_docker_image
+        where 1=1
+        and motor_version_id=${motorVersionId}
+        and motor_type=#{motorType}
+    </select>
+
+    <sql id="orderByClauseInfo">
+        <if test="criteria.orderByClauses != null">
+            <trim prefix=" ORDER  BY " suffix="  " suffixOverrides=",">
+                <foreach collection="criteria.orderByClauses" item="orderByObj">
+                    <if test="orderByObj.field != null and orderByObj.field != ''">
+                        <if test="orderByObj.orderByMode == 0">
+                            ddi.${orderByObj.field} ASC ,
+                        </if>
+                        <if test="orderByObj.orderByMode != 0">
+                            ddi.${orderByObj.field} DESC ,
+                        </if>
+                    </if>
+                </foreach>
+            </trim>
+        </if>
+    </sql>
+
+
+</mapper>

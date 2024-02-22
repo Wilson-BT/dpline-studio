@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dpline.dao.mapper.JobSavepointMapper">
+    <sql id="columns">
+        id,savepoint_name,job_id,savepoint_path,create_time,update_time, create_user,update_user
+    </sql>
+    <select id="selectByJobId" resultType="com.dpline.dao.entity.JobSavepoint">
+        select
+            <include refid="columns"/>
+        from dpline_job_savepoint
+        where job_id=#{jobId}
+        order by create_time desc
+    </select>
+
+    <delete id="deleteSavePointByJobId">
+        delete from dpline_job_savepoint where job_id=${jobId}
+    </delete>
+</mapper>

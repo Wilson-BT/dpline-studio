@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.handsome.dao.mapper.FlinkTaskInstanceMapper">
+    <sql id="columns" >
+        ${alias}.id,${alias}.flink_task_instance_name,
+        ${alias}.run_mode,${alias}.open_chain,
+        ${alias}.resource_options,${alias}.resolve_order,
+        ${alias}.checkpoint_options,${alias}.deploy_address,
+        ${alias}.deployed,${alias}.k8s_namespace_Id,
+        ${alias}.k8s_session_cluster_id,${alias}.exposed_type,
+        ${alias}.flink_image_id,${alias}.alert_type,${alias}.alert_instance_id,
+        ${alias}.restart_num,${alias}.checkpoint_address,${alias}.exec_status,
+        ${alias}.restart_options,${alias}.flink_task_tag_id,${alias}.create_time,
+        ${alias}.update_time,${alias}.project_code,${alias}.user_id,${alias}.rest_url,${alias}.description
+    </sql>
+    <select id="existFlinkTaskOnSameInstance" resultType="java.lang.Boolean">
+            select 1 from dpline_flink_run_task_instance where flink_task_tag_id = ${flinkTaskTagId} and flink_task_instance_name=#{flinkInstanceName} limit 1
+    </select>
+    <select id="queryTaskInstanceNameByK8sNamespaceId" resultType="java.lang.String">
+        select concat(b.name,'_',a.flink_task_instance_name) name
+        from dpline_flink_run_task_instance a
+            join dpline_project b on a.project_code=b.code
+            where k8s_namespace_Id = ${k8sNameSpaceId} limit 1
+    </select>
+
+    <select id="queryTaskInstanceNameByK8sAndUser" resultType="java.lang.String">
+        select concat(b.name,'_',a.flink_task_instance_name) name
+        from dpline_flink_run_task_instance a
+                 join dpline_project b on a.project_code=b.code
+        where k8s_namespace_Id = ${k8sNameSpaceId} and a.user_id=#{userId} limit 1
+    </select>
+
+    <select id="selectByDockerImageId" resultType="com.handsome.dao.entity.FlinkRunTaskInstance">
+        select 1 from dpline_flink_run_task_instance where flink_image_id=#{flinkImageId} limit 1
+    </select>
+
+    <select id="selectByFlinkInstanceStatus" resultType="com.handsome.dao.entity.FlinkRunTaskInstance">
+        select a.id,a.flink_task_instance_name,
+               a.exec_status,a.run_mode,
+               a.rest_url,a.alert_instance_id,
+               a.alert_type,b.name_space,
+               b.kube_path,c.flink_session_name
+        from (
+            select id,flink_task_instance_name,
+                   exec_status,run_mode,rest_url,
+                   k8s_namespace_Id,k8s_session_cluster_id,
+                   alert_type,alert_instance_id
+            from dpline_flink_run_task_instance where exec_status in
+            <foreach collection="execStatus" item="i" open="(" close=")" separator=",">
+                #{i}
+            </foreach>
+            and run_mode != 0
+        ) a
+        join dpline_k8s_namespace b on a.k8s_namespace_Id = b.id
+        left join dpline_flink_session c on a.k8s_session_cluster_id=c.id
+    </select>
+    <select id="selectApplicationInfoById" resultType="com.handsome.dao.entity.FlinkRunTaskInstance">
+        select <include refid="columns">
+                    <property name="alias" value="a"/>
+               </include>,
+               b.name_space,
+               b.kube_path,
+               b.service_account,
+               b.selector_lables,
+               d.image_name as image_full_name,
+               c.flink_session_name as flink_session_name
+               from dpline_flink_run_task_instance a
+        left join dpline_k8s_namespace b
+               on a.k8s_namespace_id=b.id and b.release_state=1
+        left join dpline_flink_session c
+               on a.k8s_session_cluster_id = c.id and c.status=1
+        left join dpline_docker_image d
+               on a.flink_image_id = d.id
+        where a.id=#{flinkTaskId}
+    </select>
+
+    <update id="updateExecStatus">
+        update dpline_flink_run_task_instance set exec_status=#{execStatus} where id=#{flinkTaskId}
+    </update>
+
+    <update id="updateRestUrl">
+        update dpline_flink_run_task_instance set rest_url=#{restUrl}, job_id=#{jobId} where id=#{flinkTaskId}
+    </update>
+
+    <update id="batchUpdateSessionRestUrl">
+        update dpline_flink_run_task_instance a INNER JOIN dpline_flink_session b on a.k8s_session_cluster_id=b.id set rest_url=#{restUrl}
+        where b.flink_session_name=#{flinkSessionName}
+    </update>
+</mapper>

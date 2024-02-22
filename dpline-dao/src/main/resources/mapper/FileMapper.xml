@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dpline.dao.mapper.FileMapper">
+    <resultMap id="PlusResultMap" type="com.dpline.dao.dto.DplineFileDto">
+        <id column="id" jdbcType="BIGINT" property="id" />
+        <result column="file_name" jdbcType="VARCHAR" property="fileName" />
+        <result column="file_type" jdbcType="VARCHAR" property="fileType" />
+        <result column="content" jdbcType="LONGVARCHAR" property="content" />
+        <result column="meta_table_content" jdbcType="LONGVARCHAR" property="metaTableContent" />
+        <result column="etl_content" jdbcType="LONGVARCHAR" property="etlContent" />
+        <result column="config_content" jdbcType="LONGVARCHAR" property="configContent" />
+        <result column="dag" jdbcType="LONGVARCHAR" property="dag" />
+        <result column="source_content" jdbcType="LONGVARCHAR" property="sourceContent" />
+        <result column="data_stream_content" jdbcType="LONGVARCHAR" property="dataStreamConfig" />
+        <result column="file_status" jdbcType="VARCHAR" property="fileStatus" />
+        <result column="business_flag" jdbcType="VARCHAR" property="businessFlag" />
+        <result column="project_id" jdbcType="BIGINT" property="projectId" />
+        <result column="folder_id" jdbcType="BIGINT" property="folderId" />
+        <result column="enabled_flag" jdbcType="TINYINT" property="enabledFlag" />
+        <result column="create_user" jdbcType="VARCHAR" property="createUser" />
+        <result column="update_user" jdbcType="VARCHAR" property="updateUser" />
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+        <result column="is_on_line" jdbcType="INTEGER" property="isOnLine" />
+        <result column="project_name" jdbcType="VARCHAR" property="projectName" />
+    </resultMap>
+    <update id="updateFolderId">
+        update dpline_file set folder_id=#{folderId} where id=#{fileId}
+    </update>
+    <select id="getFileHistory4Common"  resultMap="PlusResultMap">
+        select
+        distinct
+        df.id,
+        df.file_name,
+        df.folder_id,
+        df.project_id,
+        df.update_user,
+        df.update_time,
+        dp.project_name
+        from dpline_file df
+        left join dpline_project dp
+            on df.project_id = dp.id and dp.enabled_flag = 1
+        left join dpline_project_user dpu
+            on df.project_id = dpu.project_id
+            and dpu.user_code = df.update_user
+            and dpu.enabled_flag = 1
+        <where>
+            df.enabled_flag = 1
+            <if test="userCode != null and userCode != ''">
+                and df.update_user = #{userCode}
+            </if>
+        </where>
+        order by df.update_time desc
+        limit 10
+    </select>
+
+
+    <select id="getFileHistory"  resultMap="PlusResultMap">
+        select
+        df.id,
+        df.file_name,
+        df.folder_id,
+        df.project_id,
+        df.update_user,
+        df.update_time,
+        dp.project_name
+        from dpline_file df
+        left join dpline_project dp on df.project_id = dp.id and dp.enabled_flag = 1
+        <where>
+            df.enabled_flag = 1
+            <if test="userCode != null and userCode != ''">
+                and df.update_user = #{userCode}
+            </if>
+        </where>
+        order by df.update_time desc
+        limit 10
+    </select>
+    <select id="selectFiles" resultType="com.dpline.dao.dto.FileDto">
+        select
+        df.id,
+        df.file_name,
+        df.file_type,
+        df.content,
+        df.config_content,
+        df.dag,
+        df.source_content,
+        df.data_stream_content,
+        df.file_status,
+        df.project_id,
+        df.folder_id,
+        df.enabled_flag,
+        df.create_time,
+        df.update_time
+        from dpline_file df
+        <where>
+            df.enabled_flag = 1
+            <if test="fileName != null and fileName != ''">
+                and df.file_name like concat('%',#{fileName},'%')
+            </if>
+            <if test="projectId != null">
+                and df.project_id = ${projectId}
+            </if>
+            <if test="folderId != null">
+                and df.folder_id = ${folderId}
+            </if>
+            <if test="id != null">
+                and df.id = ${id}
+            </if>
+        </where>
+        order by df.file_name
+    </select>
+    <select id="getDetailFile" resultType="com.dpline.dao.dto.FileDto">
+        select
+        df.id,
+        df.file_name,
+        df.file_type,
+        df.content,
+        df.meta_table_content,
+        df.etl_content,
+        df.config_content,
+        df.dag,
+        df.source_content,
+        df.data_stream_content,
+        df.file_status,
+        df.project_id,
+        df.folder_id,
+        df.enabled_flag,
+        df.create_time,
+        df.update_time
+        from dpline_file df
+        <where>
+            df.enabled_flag = 1
+            <if test="id != null ">
+                and df.id = #{id}
+            </if>
+        </where>
+    </select>
+    <select id="getFileByName" resultType="com.dpline.dao.entity.File">
+        select * from dpline_file
+        <where>
+            enabled_flag = 1
+            <if test="fileName != null and fileName != ''">
+                and file_name = binary #{fileName}
+            </if>
+            <if test="projectId != null">
+                and project_id = #{projectId}
+            </if>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+        </where>
+    </select>
+    <select id="queryFileByName" resultType="com.dpline.dao.entity.File">
+        select * from dpline_file
+        <where>
+            enabled_flag = 1
+            <if test="fileName != null and fileName != ''">
+                and file_name = binary #{fileName}
+            </if>
+            <if test="projectId != null">
+                and project_id = #{projectId}
+            </if>
+            <if test="id != null">
+                and id != #{id}
+            </if>
+        </where>
+    </select>
+    <select id="checkState" resultType="com.dpline.dao.entity.File">
+        select
+        df.id,
+        df.enabled_flag,
+        df.file_type
+        from dpline_file df
+        where df.id in
+        <foreach collection="list" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </select>
+    <select id="queryBaseInfo" resultType="com.dpline.dao.dto.FileDto">
+        select df.id,
+               df.file_name,
+               df.file_type,
+               dp.project_name,
+               du1.user_name create_user,
+               du2.user_name update_user,
+               df.folder_id,
+               df.create_time,
+               df.update_time,
+               df.description
+        from dpline_file df
+        left join dpline_project dp on dp.id = df.project_id and dp.enabled_flag = 1
+        left join dpline_user du1 on du1.user_code = df.create_user and du1.enabled_flag = 1
+        left join dpline_user du2 on du2.user_code = df.update_user and du2.enabled_flag = 1
+        <where>
+            df.enabled_flag = 1
+            <if test="id != null and id != ''">
+                and df.id = #{id}
+            </if>
+        </where>
+    </select>
+    <select id="selectByFolderId" resultType="com.dpline.dao.entity.File">
+        select * from dpline_file where folder_id=#{folderId}
+    </select>
+
+
+</mapper>

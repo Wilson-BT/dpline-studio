@@ -1,0 +1,9 @@
+{
+  "code": 0,
+  "msg": "success",
+  "data": {
+    "username": "admin",
+    "headUrl": "/photo.jpeg",
+    "token": "Fx5X9P7uAh8DQIoHHG9bQmsrc5tzWYvX"
+  }
+}

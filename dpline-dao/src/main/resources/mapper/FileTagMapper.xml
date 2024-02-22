@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dpline.dao.mapper.FileTagMapper">
+    <sql id="orderByClauseInfo">
+        <if test="criteria.orderByClauses != null">
+            <trim prefix=" ORDER  BY " suffix="  " suffixOverrides=",">
+                <foreach collection="criteria.orderByClauses" item="orderByObj">
+                    <if test="orderByObj.field != null and orderByObj.field != ''">
+                        <if test="orderByObj.orderByMode == 0">
+                            dft.${orderByObj.field} ASC ,
+                        </if>
+                        <if test="orderByObj.orderByMode != 0">
+                            dft.${orderByObj.field} DESC ,
+                        </if>
+                    </if>
+                </foreach>
+            </trim>
+        </if>
+    </sql>
+    <delete id="deleteByFileId">
+        delete from dpline_file_tag where file_id=#{fileId}
+    </delete>
+    <select id="getTagsByFileId" resultType="com.dpline.dao.entity.FileTag">
+        select
+            id,
+            file_id,
+            file_tag_name,
+            remark,
+            create_time,
+            create_user,
+            update_time,
+            update_user
+        from
+            dpline_file_tag  dft
+        where 1=1
+        <if test="criteria != null">
+            <if test="criteria.vo.fileId != null and criteria.vo.fileId != 0">
+                and file_id=#{criteria.vo.fileId}
+            </if>
+        </if>
+        <include refid="orderByClauseInfo"></include>
+    </select>
+    <select id="getLastTagsByFileId" resultType="com.dpline.dao.entity.FileTag">
+        select * from
+            dpline_file_tag where file_id = #{fileId}
+        order by create_time desc limit 1
+    </select>
+    <select id="getTagsByFileIdAndName" resultType="com.dpline.dao.entity.FileTag">
+        select
+        id,
+        file_id,
+        file_tag_name,
+        remark,
+        create_time,
+        create_user,
+        update_time,
+        update_user
+        from dpline_file_tag where file_id = #{fileId} and file_tag_name=#{tagName}
+    </select>
+    <select id="selectFileTagCount" resultType="java.lang.Integer">
+        select count(1) from dpline_file_tag where file_id = ${fileId}
+    </select>
+    <select id="selectAllTagByFileId" resultType="com.dpline.dao.entity.FileTag">
+        select * from dpline_file_tag where file_id = ${fileId}
+    </select>
+    <select id="selectTagByFileIdAndVersion" resultType="com.dpline.dao.entity.FileTag">
+        select * from dpline_file_tag where file_id = ${fileId} and file_tag_name = #{tagName}
+    </select>
+</mapper>

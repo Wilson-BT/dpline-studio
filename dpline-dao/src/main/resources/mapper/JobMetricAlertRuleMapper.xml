@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dpline.dao.mapper.JobMetricAlertRuleMapper">
+    <sql id="columns">
+        id,
+        job_id,
+        rule_generate_type,
+        rule_name,
+        rule_desc,
+        index_name,
+        rule_content,
+        effective_time,
+        alert_rate,
+        notify_type,
+        notify_users,
+        effective_state,
+        enabled_flag,
+        create_user,
+        update_user,
+        create_time,
+        update_time
+    </sql>
+    <select id="selectByJobId" resultType="com.dpline.dao.entity.JobMetricAlertRule">
+        select
+            <include refid="columns"></include>
+        from
+            dpline_job_alert_rule djal
+        where job_id=${criteria.jobId}
+        <include refid="orderByClauseInfo"></include>
+    </select>
+
+    <sql id="orderByClauseInfo">
+        <if test="criteria.orderByClauses != null">
+            <trim prefix=" ORDER  BY " suffix="  " suffixOverrides=",">
+                <foreach collection="criteria.orderByClauses" item="orderByObj">
+                    <if test="orderByObj.field != null and orderByObj.field != ''">
+                        <if test="orderByObj.orderByMode == 0">
+                            djal.${orderByObj.field} ASC ,
+                        </if>
+                        <if test="orderByObj.orderByMode != 0">
+                            djal.${orderByObj.field} DESC ,
+                        </if>
+                    </if>
+                </foreach>
+            </trim>
+        </if>
+    </sql>
+</mapper>
