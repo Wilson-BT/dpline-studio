@@ -14,6 +14,10 @@
 Streampark 地址: https://github.com/streamnative/streampark
 
 
+### 项目文档
+本项目文档全部保存在语雀中，地址如下：
+https://www.yuque.com/beita-upkh6/wuzm8t
+
 
 
 
