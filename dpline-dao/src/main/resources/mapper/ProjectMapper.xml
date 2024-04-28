@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dpline.dao.mapper.ProjectMapper">
+
+    <resultMap id="PlusResultMap" type="com.dpline.dao.dto.ProjectInfo">
+        <id column="id" jdbcType="BIGINT" property="id" />
+        <result column="project_name" jdbcType="VARCHAR" property="projectName" />
+<!--        <result column="project_code" jdbcType="VARCHAR" property="projectCode" />-->
+        <result column="current_user_role" jdbcType="BIGINT" property="currentUserRole" />
+        <result column="user_count" jdbcType="INTEGER" property="userCount" />
+        <result column="online_job_num" jdbcType="INTEGER" property="onlineJobNum" />
+        <result column="create_user" jdbcType="VARCHAR" property="createUser" />
+        <result column="create_time" jdbcType="VARCHAR" property="createTime" />
+        <collection property="userList" ofType="com.dpline.dao.dto.ProjectUserInfo">
+            <result column="is_admin" jdbcType="INTEGER" property="isAdmin"/>
+            <result column="project_id" jdbcType="INTEGER" property="projectId"/>
+            <result column="user_role" jdbcType="INTEGER" property="userRole"/>
+            <result column="user_name" jdbcType="VARCHAR" property="userName"/>
+            <result column="user_code" jdbcType="VARCHAR" property="userCode"/>
+            <result column="phone" jdbcType="VARCHAR" property="phone"/>
+        </collection>
+    </resultMap>
+
+    <select id="getTaskProjectStat" resultType="com.dpline.dao.bo.ProjectCount">
+        SELECT
+            count(distinct (dpu.user_code)) as user_total,
+            count(distinct (df.id)) as job_total,
+            count(distinct (dp.id)) as project_total
+        from dpline_project dp
+        left join dpline_file df
+            on dp.id = df.project_id and df.enabled_flag = 1
+        left join dpline_project_user dpu
+            on dp.id = dpu.project_id and dpu.enabled_flag = 1
+        where dp.enabled_flag = 1
+        <if test="projectName != null and projectName != ''">
+            AND project_name like CONCAT('%', #{projectName, jdbcType=VARCHAR},'%')
+        </if>
+        <if test="userCode != null and userCode != 0">
+            AND dp.id in (select project_id from dpline_project_user where user_code = #{userCode} and enabled_flag = 1)
+        </if>
+    </select>
+<!--    <select id="getProjectList" resultMap="PlusResultMap">-->
+<!--        select-->
+<!--            a.id,-->
+<!--            a.project_code,-->
+<!--            a.project_name,-->
+<!--            a.current_user_role, &#45;&#45; 当前用户的角色-->
+<!--            a.user_count,-->
+<!--            case when a.online_job_num is null then 0 else a.online_job_num end as online_job_num,-->
+<!--            a.id as project_id,-->
+<!--            a.create_time,-->
+<!--            a.create_user,-->
+<!--            dpu.user_role,-->
+<!--            du.is_admin,-->
+<!--            du.user_code,-->
+<!--            du.user_name,-->
+<!--            du.phone&#45;&#45; 所有用户的角色-->
+<!--        from(-->
+<!--            select-->
+<!--                t.id,-->
+<!--                t.project_code,-->
+<!--                t.project_name,-->
+<!--                t.current_user_role,-->
+<!--                t.create_user,-->
+<!--                t.create_time,-->
+<!--                t.user_count,-->
+<!--                t2.online_job_num-->
+<!--            from (-->
+<!--                SELECT-->
+<!--                    dp.id,-->
+<!--                    dp.project_code,-->
+<!--                    dp.project_name,-->
+<!--                    du.user_name as create_user,-->
+<!--                    dp.create_time,-->
+<!--                    &#45;&#45; 当前用户角色-->
+<!--                    max(case when dpu.user_code=#{userCode} then dpu.user_role else null end) as current_user_role,-->
+<!--                    &#45;&#45; 用户总数-->
+<!--                    count(dpu.user_code) as user_count-->
+<!--                from dpline_project dp-->
+<!--                left join dpline_user du-->
+<!--                    on dp.create_user = du.user_code-->
+<!--                left join dpline_project_user dpu-->
+<!--                    on dp.id = dpu.project_id-->
+<!--                    and dpu.enabled_flag = 1-->
+<!--                <where>-->
+<!--                    dp.enabled_flag = 1-->
+<!--                    <if test="projectName != null and projectName != ''">-->
+<!--                        AND dp.project_name like CONCAT('%',#{projectName, jdbcType=VARCHAR},'%')-->
+<!--                    </if>-->
+<!--                </where>-->
+<!--                    group by-->
+<!--                    dp.id,-->
+<!--                    dp.project_name,-->
+<!--                    dp.project_code,-->
+<!--                    dp.create_time,-->
+<!--                    du.user_name-->
+<!--            ) t-->
+<!--            left join (-->
+<!--                select-->
+<!--                       sj.project_id,count(sj.id) as online_job_num-->
+<!--                from dpline_job sj-->
+<!--                where sj.enabled_flag = 1-->
+<!--                group by sj.project_id-->
+<!--            ) t2 on t2.project_id = t.id-->
+<!--        )a-->
+<!--        left join-->
+<!--        dpline_project_user dpu on a.id = dpu.project_id and dpu.enabled_flag = 1-->
+<!--        left join-->
+<!--        dpline_user du on dpu.user_code = du.user_code-->
+<!--        <include refid="orderByClauseInfo"/>-->
+<!--    </select>-->
+    <select id="getProjects" resultType="com.dpline.dao.entity.Project">
+        SELECT
+            distinct
+            dp.id,
+            dp.project_name,
+            dp.create_user,
+            dp.create_time
+        from dpline_project dp
+        join dpline_project_user dpu on dpu.project_id = dp.id and dpu.enabled_flag = 1
+        <where>
+            dp.enabled_flag = 1
+            <if test="userCode != null and userCode != 0">
+                and dpu.user_code = #{userCode}
+            </if>
+            <if test="projectName != null and projectName != ''">
+                and dp.project_name like concat('%',#{projectName},'%')
+            </if>
+        </where>
+    </select>
+    <select id="selectByUserCode" resultType="com.dpline.dao.entity.ProjectUser">
+        select * from dpline_project_user where user_code=#{userCode}
+    </select>
+    <select id="getAuthedProjectList" resultType="com.dpline.dao.dto.ProjectInfo">
+        select
+            dp.id,
+            dp.project_name,
+            case when t2.online_job_num is null then 0 else t2.online_job_num end as online_job_num,
+            dp.create_time,
+            du.user_name as create_user,
+            dp.description,
+            count(distinct dpu.user_code) as user_count
+        from
+            dpline_project dp
+        left join
+            dpline_user du on dp.create_user = du.user_code
+        left join
+            dpline_project_user dpu on dp.id = dpu.project_id and dpu.enabled_flag = 1
+        left join (
+            select
+                dj.project_id,
+                count(dj.id) as online_job_num
+            from dpline_job dj
+            where dj.enabled_flag = 1
+            <if test="projectIdList != null ">
+                <foreach collection="projectIdList" item="id" separator="," open="and project_id in (" close=")">
+                    ${id}
+                </foreach>
+            </if>
+            group by dj.project_id
+        ) t2 on t2.project_id = dp.id
+        where 1=1
+        <if test="projectIdList != null ">
+            <foreach collection="projectIdList" item="id" separator="," open="and dp.id in (" close=")">
+                ${id}
+            </foreach>
+        </if>
+        <if test="projectName != '' and projectName != null">
+            and dp.project_name like concat('%',#{projectName},'%')
+        </if>
+        group by
+            dp.id,
+            dp.project_name,
+            case when t2.online_job_num is null then 0 else t2.online_job_num end,
+            dp.create_time,
+            du.user_name
+    </select>
+    <select id="selectByProjectId" resultType="com.dpline.dao.dto.ProjectUserInfo">
+        select
+            dpu.*,
+            du.user_name,
+            du.phone,
+            du.is_admin,
+            dpu.user_role as is_leader
+        from dpline_project_user dpu
+        left join dpline_user du
+        on dpu.user_code = du.user_code and du.enabled_flag = 1
+        where 1=1
+        <if test="projectIdList != null ">
+            <foreach collection="projectIdList" item="id" separator="," open="and dpu.project_id in (" close=")">
+                ${id}
+            </foreach>
+        </if>
+    </select>
+
+
+    <sql id="orderByClauseInfo">
+        <if test="orderByClauses != null">
+            <trim prefix=" ORDER  BY " suffix="  " suffixOverrides=",">
+                <foreach collection="orderByClauses" item="orderByObj">
+                    <if test="orderByObj.field != null and orderByObj.field != ''">
+                        <if test="orderByObj.orderByMode == 0">
+                            a.${orderByObj.field} ASC ,
+                        </if>
+                        <if test="orderByObj.orderByMode != 0">
+                            a.${orderByObj.field} DESC ,
+                        </if>
+                    </if>
+                </foreach>
+            </trim>
+        </if>
+    </sql>
+
+
+</mapper>

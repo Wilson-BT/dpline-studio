@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dpline.dao.mapper.UserMapper">
+    <sql id="baseSql">
+       id, user_code,user_name, password, is_admin, email, phone, create_time, update_time, enabled_flag
+    </sql>
+    <sql id="baseSqlV2">
+       ${alias}.id, ${alias}.user_code,${alias}.user_name, ${alias}.password, ${alias}.is_admin, ${alias}.email, ${alias}.phone,
+       ${alias}.create_time, ${alias}.update_time,${alias}.enabled_flag
+    </sql>
+    <sql id="orderByClauseInfo">
+        <if test="criteria.orderByClauses != null">
+            <trim prefix=" ORDER  BY " suffix="  " suffixOverrides=",">
+                <foreach collection="criteria.orderByClauses" item="orderByObj">
+                    <if test="orderByObj.field != null and orderByObj.field != ''">
+                        <if test="orderByObj.orderByMode == 0">
+                            a.${orderByObj.field} ASC ,
+                        </if>
+                        <if test="orderByObj.orderByMode != 0">
+                            a.${orderByObj.field} DESC ,
+                        </if>
+                    </if>
+                </foreach>
+            </trim>
+        </if>
+    </sql>
+    <resultMap id="BaseResultMap" type="com.dpline.dao.entity.User">
+        <id column="id" jdbcType="BIGINT" property="id" />
+        <result column="user_name" jdbcType="VARCHAR" property="userName" />
+        <result column="user_code" jdbcType="VARCHAR" property="userCode" />
+        <result column="password" jdbcType="VARCHAR" property="password" />
+        <result column="phone" jdbcType="VARCHAR" property="phone" />
+        <result column="email" jdbcType="VARCHAR" property="email" />
+        <result column="is_admin" jdbcType="TINYINT" property="isAdmin" />
+        <result column="project_id" jdbcType="BIGINT" property="projectId" />
+        <result column="enabled_flag" jdbcType="TINYINT" property="enabledFlag" />
+        <result column="create_user" jdbcType="VARCHAR" property="createUser" />
+        <result column="update_user" jdbcType="VARCHAR" property="updateUser" />
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+    </resultMap>
+    <select id="queryAllGeneralUser" resultType="com.dpline.dao.entity.User">
+        select
+        <include refid="baseSql"/>
+        from dpline_user
+        where is_admin=0 and enabled_flag=1;
+    </select>
+    <select id="queryByUserNameAccurately" resultType="com.dpline.dao.entity.User">
+        select
+        <include refid="baseSql"/>
+        from dpline_user
+        where user_name=#{userName} and enabled_flag=1
+    </select>
+<!--    <select id="queryUserByNamePassword" resultType="com.dpline.dao.entity.User">-->
+<!--        select-->
+<!--        <include refid="baseSql"/>-->
+<!--        from dpline_user-->
+<!--        where user_code=#{userCode} and password = #{password}-->
+<!--    </select>-->
+    <update id="disableUser">
+        update dpline_user set enabled_flag=0, update_user=#{updateUser} where id=${userId}
+    </update>
+    <select id="queryUserByCodePassword" resultType="com.dpline.dao.entity.User">
+        select
+        <include refid="baseSql"/>
+        from dpline_user
+        where user_code=#{userCode} and password = #{password} and enabled_flag=1
+    </select>
+    <select id="queryUserPaging" resultType="com.dpline.dao.entity.User">
+        select u.id,u.user_name,u.password,u.is_admin,u.email,u.phone,u.create_time,u.update_time,u.enabled_flag
+        from dpline_user u
+        where 1=1 and enabled_flag=1
+        <if test="userName!=null and userName != ''">
+            and u.user_name like concat ('%', #{userName}, '%')
+        </if>
+        order by u.update_time desc
+    </select>
+    <select id="queryDetailsById" resultType="com.dpline.dao.entity.User">
+        select
+        <include refid="baseSqlV2">
+            <property name="alias" value="u"/>
+        </include>
+        from dpline_user u
+        WHERE id = #{userId}
+    </select>
+    <select id="queryUserListByAlertGroupId" resultType="com.dpline.dao.entity.User">
+        select
+        <include refid="baseSqlV2">
+            <property name="alias" value="u"/>
+        </include>
+        from dpline_user u, dpline_relation_user_alertgroup rel
+        where u.id = rel.user_id AND rel.alertgroup_id = #{alertgroupId}
+    </select>
+    <select id="queryUserByToken" resultType="com.dpline.dao.entity.User">
+        select
+        <include refid="baseSqlV2">
+            <property name="alias" value="u"/>
+        </include>
+        from dpline_user u ,dpline_access_token t
+        where u.id = t.user_id and token=#{token} and t.expire_time > NOW()
+    </select>
+    <select id="selectByIds" resultType="com.dpline.dao.entity.User">
+        select *
+        from dpline_user
+        where enabled_flag=1 id in
+        <foreach item="id" index="index" collection="ids" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+    <select id="queryAuthedUserListByProjectId" resultType="com.dpline.dao.entity.User">
+        select
+        <include refid="baseSqlV2">
+            <property name="alias" value="u"/>
+        </include>
+        from dpline_user u, dpline_relation_project_user rel
+        where u.id = rel.user_id
+            and rel.project_id = #{projectId}
+            and u.enabled_flag=1
+    </select>
+    <select id="getProjectHistory" resultType="com.dpline.dao.entity.ProjectUser">
+        SELECT
+            du.id,
+            du.user_name,
+            du.user_code,
+            du.is_admin,
+            du.project_id,
+            dp.project_name
+--             dp.project_code
+        from dpline_user du
+        inner join dpline_project dp on du.project_id = dp.id and dp.enabled_flag = 1
+        <where>
+            du.enabled_flag = 1
+            and du.project_id is not null
+            <if test="userCode != null ">
+                and du.user_code = #{userCode}
+            </if>
+        </where>
+    </select>
+    <select id="queryProjectsByUser" resultType="com.dpline.dao.entity.ProjectUser">
+        SELECT
+        dpu.user_code,
+        dpu.project_id,
+        dp.project_name
+--         dp.project_code
+        from dpline_project_user dpu
+        inner join dpline_project dp on dp.id = dpu.project_id and dp.enabled_flag = 1
+        <where>
+            dpu.enabled_flag = 1
+            <if test="userCode != null ">
+                and dpu.user_code = #{userCode}
+            </if>
+        </where>
+        limit 1
+    </select>
+    <select id="listUserDetail" resultMap="BaseResultMap">
+        SELECT
+        a.id,
+        a.user_name,
+        a.user_code,
+        a.phone,
+        a.email,
+        a.is_admin,
+        a.create_time,
+        a.update_time,
+        a.create_user,
+        b.user_name as update_user
+        from dpline_user a left join dpline_user b on a.update_user = b.user_code
+        <where>
+            a.enabled_flag = 1
+            <if test="criteria != null">
+                <if test="criteria.vo.userCode != null and criteria.vo.user_code != ''">
+                    and a.user_code = #{criteria.vo.user_code, jdbcType=VARCHAR}
+                </if>
+                <if test="criteria.vo.userName != null and criteria.vo.userName != ''">
+                    and a.user_name like concat('%', #{criteria.vo.userName, jdbcType=VARCHAR},'%')
+                </if>
+            </if>
+        </where>
+        <include refid="orderByClauseInfo"></include>
+    </select>
+    <select id="queryUserByNameCode" resultType="com.dpline.dao.entity.User">
+        SELECT
+               id,
+        user_name,
+        user_code,
+        is_admin
+        from dpline_user
+        <where>
+            enabled_flag = 1
+            <if test="nameOrCode != null and nameOrCode != ''">
+                and (  user_name  like CONCAT('%',#{nameOrCode, jdbcType=VARCHAR},'%')
+                OR cast(user_code as char) like CONCAT('%',#{nameOrCode, jdbcType=VARCHAR},'%')  )
+            </if>
+        </where>
+    </select>
+    <select id="getProjectUser" resultType="com.dpline.dao.dto.ProjectUserInfo">
+        SELECT
+            t.id,
+            t.user_name,
+            t.user_code,
+            t.is_admin,
+            t.project_id,
+            t.user_role,
+            t.is_leader
+        from (
+            SELECT
+                du.id,
+                du.user_name,
+                du.user_code,
+                du.is_admin,
+                dpu.project_id,
+                dpu.user_role as is_leader,
+                dpu.user_role
+            from dpline_project_user dpu
+            inner JOIN dpline_user du on dpu.user_code = du.user_code and du.enabled_flag = 1
+            where
+                dpu.enabled_flag = 1
+            <foreach collection="projectIdCollect" item="i" open="and dpu.project_id in (" close=")" separator=",">
+                ${i}
+            </foreach>
+            and dpu.is_leader in (0,1)
+            <if test="userCode != null ">
+                and dpu.user_code = #{userCode}
+            </if>
+        ) t
+        order by t.is_leader desc limit 1
+    </select>
+    <select id="queryByUserCode" resultType="com.dpline.dao.entity.User">
+        select <include refid="baseSql"/> from dpline_user where user_code=#{userCode} and enabled_flag=1
+    </select>
+    <select id="queryAllUser" resultType="com.dpline.dao.entity.User">
+        select
+        <include refid="baseSql"/>
+        from dpline_user
+        where enabled_flag=1;
+    </select>
+
+
+</mapper>

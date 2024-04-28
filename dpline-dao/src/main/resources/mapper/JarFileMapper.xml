@@ -1,0 +1,264 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dpline.dao.mapper.JarFileMapper">
+    <sql id="orderByClauseInfo">
+        <if test="criteria.orderByClauses != null">
+            <trim prefix=" ORDER  BY " suffix="  " suffixOverrides=",">
+                <foreach collection="criteria.orderByClauses" item="orderByObj">
+                    <if test="orderByObj.field != null and orderByObj.field != ''">
+                        <if test="orderByObj.orderByMode == 0">
+                            djf.${orderByObj.field} ASC ,
+                        </if>
+                        <if test="orderByObj.orderByMode != 0">
+                            djf.${orderByObj.field} DESC ,
+                        </if>
+                    </if>
+                </foreach>
+            </trim>
+        </if>
+    </sql>
+    <sql id="baseSql">
+        ${alias}.id ,${alias}.jar_name ,${alias}.main_resource_id ,
+        ${alias}.jar_path,${alias}.file_md5,${alias}.motor_version_id,${alias}.description,
+        ${alias}.update_user ,${alias}.create_time ,${alias}.update_time,${alias}.update_user
+    </sql>
+    <update id="updateMainJarId">
+        update dpline_job set main_jar_id=${jarId} where id=${jobId}
+    </update>
+    <!--    <update id="unsetPrimaryJarVersion">-->
+<!--        update dpline_jar_file-->
+<!--        set primary_jar=0-->
+<!--        where primary_jar=1-->
+<!--          AND name=#{name}-->
+<!--          and jar_auth_type=#{jarAuthType}-->
+<!--        <if test="projectId != null and projectId != '' and jarAuthType =='project'">-->
+<!--            and project_id=${projectId}-->
+<!--        </if>-->
+
+<!--    </update>-->
+<!--    <update id="batchUpdateJarName">-->
+<!--        update dpline_jar_file-->
+<!--        set `name`=#{newName}-->
+<!--        where name=#{oldName}-->
+<!--        <if test="jarAuthType != null">-->
+<!--            and jar_auth_type=#{jarAuthType}-->
+<!--        </if>-->
+<!--        <if test="jarAuthType == 'project'" >-->
+<!--            and project_id=${projectId}-->
+<!--        </if>-->
+<!--        <if test="jarFunctionType != null and jarFunctionType != ''">-->
+<!--            and jar_function_type = #{jarFunctionType}-->
+<!--        </if>-->
+<!--    </update>-->
+<!--    <delete id="deleteJarByName">-->
+<!--        delete from dpline_jar_file-->
+<!--        where jar_auth_type=#{jarFileDto.jarAuthType}-->
+<!--        <if test="jarFileDto.name != null and jarFileDto.name != ''">-->
+<!--            AND `name`=#{jarFileDto.name}-->
+<!--        </if>-->
+<!--        <if test="jarFileDto.jarAuthType == 'project'">-->
+<!--            and project_id=#{jarFileDto.projectId}-->
+<!--        </if>-->
+<!--        <if test="jarFunctionType != '' and jarFunctionType != null">-->
+<!--            and jar_function_type=#{jarFunctionType}-->
+<!--        </if>-->
+<!--    </delete>-->
+
+    <select id="listJar" resultType="com.dpline.dao.entity.JarFile">
+        select <include refid="baseSql" >
+                    <property name="alias" value="djf"/>
+                </include>,
+               du.user_name as create_user,
+               dfv.real_version as motor_real_version,
+               dmr.run_motor_type,
+               dmr.jar_function_type,
+               dmr.jar_auth_type
+        from dpline_jar_file_dtl djf
+        left join dpline_main_resource dmr
+            on djf.main_resource_id =dmr.id
+        left join dpline_user du
+            on djf.create_user = du.user_code
+        left join dpline_flink_version dfv
+            on djf.motor_version_id=dfv.id
+        where 1 = 1
+        <if test="criteria != null">
+            <if test="criteria.vo.mainResourceId != null and criteria.vo.mainResourceId != ''">
+                AND djf.main_resource_id=#{criteria.vo.mainResourceId}
+            </if>
+        </if>
+    </select>
+<!--    <select id="searchJar" resultType="com.dpline.dao.entity.JarFile">-->
+<!--        select <include refid="baseSql">-->
+<!--                    <property name="alias" value="djf"/>-->
+<!--               </include>-->
+<!--        from dpline_jar_file djf-->
+<!--        where 1=1 and djf.jar_auth_type=#{jarAuthType}-->
+<!--        <if test="name != null and name != ''">-->
+<!--            AND djf.name=#{name}-->
+<!--        </if>-->
+<!--        <if test="projectId != null and projectId != '' and jarAuthType == 'project'">-->
+<!--            and djf.project_id=${projectId}-->
+<!--        </if>-->
+<!--        <if test="fileMd5 != null and fileMd5 != ''">-->
+<!--            and djf.file_md5=#{fileMd5}-->
+<!--        </if>-->
+<!--    </select>-->
+<!--    <select id="searchJarByJarName" resultType="com.dpline.dao.entity.JarFile">-->
+<!--        select <include refid="baseSql">-->
+<!--                <property name="alias" value="djf"/>-->
+<!--               </include>-->
+<!--        from dpline_jar_file djf-->
+<!--        where 1=1-->
+<!--          and primary_jar=1-->
+<!--        <if test="jarFunctionType != null and jarFunctionType != ''">-->
+<!--            AND djf.jar_function_type=#{jarFunctionType}-->
+<!--        </if>-->
+<!--        <if test="name != null and name != ''">-->
+<!--            AND djf.name=#{name}-->
+<!--        </if>-->
+<!--        <choose>-->
+<!--          <when test="projectId != null and projectId != '' and projectId != 0">-->
+<!--              and ((djf.project_id=${projectId} and jar_auth_type='project') or jar_auth_type='public')-->
+<!--          </when>-->
+<!--          <otherwise>-->
+<!--              and jar_auth_type='public'-->
+<!--          </otherwise>-->
+<!--        </choose>-->
+<!--        <if test="motorVersionId != null and motorVersionId != '' and motorVersionId != 0">-->
+<!--            and motor_version_id = ${motorVersionId}-->
+<!--        </if>-->
+<!--    </select>-->
+<!--    <select id="findMaxVersion" resultType="java.lang.String">-->
+<!--        select max(version)-->
+<!--        from dpline_jar_file djf-->
+<!--        where 1=1-->
+<!--        and djf.jar_auth_type=#{jarAuthType}-->
+<!--        <if test="name != null and name != ''">-->
+<!--            AND djf.name=#{name}-->
+<!--        </if>-->
+<!--        <if test="jarAuthType == 'project'">-->
+<!--            and djf.project_id=${projectId}-->
+<!--        </if>-->
+<!--        <if test="jarFunctionType != null and jarFunctionType != ''">-->
+<!--            and djf.jar_function_type=#{jarFunctionType}-->
+<!--        </if>-->
+<!--    </select>-->
+<!--    <select id="queryJar" resultType="com.dpline.dao.entity.JarFile">-->
+<!--        select djf.id,-->
+<!--               djf.jar_name,-->
+<!--               djf.project_id,-->
+<!--               du.user_name as create_user,-->
+<!--               djf.create_time,-->
+<!--               djf.jar_version,-->
+<!--               djf.update_time,-->
+<!--               djf.update_user,-->
+<!--               djf.primary_jar,-->
+<!--               djf.name,-->
+<!--               djf.jar_path,-->
+<!--               djf.description,-->
+<!--               djf.jar_function_type,-->
+<!--               djf.run_motor_type,-->
+<!--               dfv.real_version as motor_real_version,-->
+<!--               djf.motor_version_id,-->
+<!--               djf.jar_auth_type,-->
+<!--               djf.file_md5,-->
+<!--               djf.project_id-->
+<!--        from dpline_jar_file djf-->
+<!--        left join dpline_user du-->
+<!--            on djf.create_user = du.user_code-->
+<!--            and du.enabled_flag=1-->
+<!--        left join dpline_flink_version dfv-->
+<!--            on djf.motor_version_id = dfv.id-->
+<!--        where 1=1-->
+<!--        <if test="criteria != null">-->
+<!--            <if test="criteria.vo.jarAuthType != null and criteria.vo.jarAuthType != ''">-->
+<!--                and djf.jar_auth_type = #{criteria.vo.jarAuthType}-->
+<!--            </if>-->
+<!--            <if test="criteria.vo.name != null and criteria.vo.name != ''">-->
+<!--                and djf.name like concat('%',#{criteria.vo.name},'%')-->
+<!--            </if>-->
+<!--            <if test="criteria.vo.projectId != null and criteria.vo.projectId != '' and criteria.vo.jarAuthType == 'project'">-->
+<!--                and djf.project_id=${criteria.vo.projectId}-->
+<!--            </if>-->
+<!--&lt;!&ndash;            <if test="criteria.type == 'history'">&ndash;&gt;-->
+<!--&lt;!&ndash;                and djf.primary_jar=0&ndash;&gt;-->
+<!--&lt;!&ndash;            </if>&ndash;&gt;-->
+<!--        </if>-->
+<!--        <include refid="orderByClauseInfo"></include>-->
+<!--    </select>-->
+<!--    <select id="queryJarReferenceJobs" resultType="com.dpline.dao.entity.Job">-->
+<!--        select-->
+<!--        dj.id,-->
+<!--        dj.job_name-->
+<!--        from dpline_jar_file djf-->
+<!--        join dpline_job dj on dj.file_id=djf.id-->
+<!--        where 1=1 and djf.jar_auth_type=#{jarAuthType}-->
+<!--        <if test="name != null and name != ''">-->
+<!--            AND djf.name=#{name}-->
+<!--        </if>-->
+<!--        <if test="projectId != null and projectId != '' and jarAuthType == 'project'">-->
+<!--            and djf.project_id=${projectId}-->
+<!--        </if>-->
+<!--        <if test="projectId != null and projectId != ''">-->
+<!--            and dj.project_id=${projectId}-->
+<!--        </if>-->
+<!--    </select>-->
+<!--    <select id="searchJarByName" resultType="com.dpline.dao.entity.JarFile">-->
+<!--        select * from-->
+<!--        dpline_jar_file-->
+<!--        where `name`=#{name}-->
+<!--          and jar_auth_type=#{jarAuthType}-->
+<!--        <if test="jarAuthType == 'project'">-->
+<!--          and project_id = ${projectId}-->
+<!--        </if>-->
+<!--        <if test="jarFunctionType != null and jarFunctionType != ''">-->
+<!--          and jar_function_type = #{jarFunctionType}-->
+<!--        </if>-->
+<!--    </select>-->
+    <select id="selectByMainId" resultType="com.dpline.dao.entity.JarFile">
+        select drfd.*,
+               dmr.jar_function_type,
+               dmr.run_motor_type,
+               dmr.jar_auth_type,
+               dmr.project_id
+        from dpline_jar_file_dtl drfd
+        join dpline_main_resource dmr
+        on drfd.main_resource_id = dmr.id
+        where 1=1
+        <if test="mainResourceId != null " >
+            and drfd.main_resource_id=${mainResourceId}
+        </if>
+    </select>
+    <select id ="selectByMainResource" resultType="com.dpline.dao.entity.JarFile">
+        select *
+        from dpline_jar_file_dtl drfd
+        where main_resource_id=${mainResourceId}
+          <if test="motorVersionId != null and motorVersionId != 0">
+              and motor_version_id=${motorVersionId}
+          </if>
+        order by update_time desc
+    </select>
+    <select id="listAllMessageById" resultType="com.dpline.dao.entity.JarFile">
+        select <include refid="baseSql" >
+            <property name="alias" value="djf"/>
+        </include>,
+        dfv.real_version as motor_real_version,
+        dmr.run_motor_type,
+        dmr.jar_function_type,
+        dmr.jar_auth_type
+        from dpline_jar_file_dtl djf
+        left join dpline_main_resource dmr
+        on djf.main_resource_id =dmr.id
+        left join dpline_user du
+        on djf.create_user = du.user_code
+        left join dpline_flink_version dfv
+        on djf.motor_version_id=dfv.id
+        where 1 = 1 AND djf.id=#{id}
+    </select>
+    <select id="findMainEffectJar" resultType="com.dpline.dao.entity.JarFile">
+        select * from
+            dpline_jar_file_dtl
+        where main_resource_id=${mainResourceId}
+        order by update_time desc limit 1
+    </select>
+</mapper>

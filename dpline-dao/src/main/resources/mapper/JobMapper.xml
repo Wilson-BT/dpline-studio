@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dpline.dao.mapper.JobMapper">
+    <sql id="orderByClause">
+        <if test="criteria != null and criteria.orderByClauses != null ">
+            <if test="criteria != null and criteria.orderByClauses != null ">
+                <trim prefix=" ORDER  BY " suffix="  " suffixOverrides=",">
+                    <foreach collection="criteria.orderByClauses" item="orderByObj">
+                        <if test="orderByObj.field != null and orderByObj.field != ''">
+                            <if test="orderByObj.orderByMode == 0">
+                                ${orderByObj.field} ASC ,
+                            </if>
+                            <if test="orderByObj.orderByMode != 0">
+                                ${orderByObj.field} DESC ,
+                            </if>
+                        </if>
+                    </foreach>
+                </trim>
+            </if>
+        </if>
+    </sql>
+    <sql id="column">
+        ${alias}.id,
+        ${alias}.job_name,
+        ${alias}.job_content,
+        ${alias}.run_mode_type,
+        ${alias}.file_type,
+        ${alias}.cluster_id,
+        ${alias}.image_id,
+        ${alias}.runtime_options,
+        ${alias}.other_runtime_config,
+        ${alias}.motor_version_id,
+        ${alias}.main_resource_id,
+        ${alias}.main_class,
+        ${alias}.app_args,
+        ${alias}.source_content,
+        ${alias}.project_id,
+        ${alias}.run_motor_type,
+        ${alias}.file_id,
+        ${alias}.enabled_flag,
+        ${alias}.env,
+        ${alias}.run_job_id,
+        ${alias}.exec_status,
+        ${alias}.deployed,
+        ${alias}.create_time,
+        ${alias}.update_time,
+        ${alias}.file_tag_id,
+        ${alias}.alert_instance_id,
+        ${alias}.alert_mode,
+        ${alias}.main_jar_id
+    </sql>
+<!--    <update id="updateRunJobId">-->
+<!--        update dpline_job set run_job_id=#{runJobId} where id=#{id}-->
+<!--    </update>-->
+
+    <update id="updateExecStatus">
+        update dpline_job set exec_status=#{execStatus} where id=#{jobId}
+    </update>
+    <update id="updateMainJarId">
+        update dpline_job set main_jar_id=${mainJarId} where id=${jobId}
+    </update>
+    <update id="updateAlertConfig">
+        update dpline_job
+        set alert_instance_id=${alertInstanceId},
+            alert_mode=#{alertMode}
+        where id=${jobId}
+    </update>
+
+    <select id="queryJobByFileId" resultType="com.dpline.dao.entity.Job">
+        select *
+        from dpline_job
+        where enabled_flag = 1
+          and file_id = #{fileId}
+    </select>
+    <select id="selectByDockerImageId" resultType="com.dpline.dao.entity.Job">
+        select *
+        from dpline_job
+        where enabled_flag = 1
+        and image_id=${dockerImageId}
+    </select>
+    <select id="queryJobs" resultType="com.dpline.dao.entity.Job">
+        select
+            distinct
+            dj.id,
+            dj.job_name,
+            dj.exec_status,
+            dj.project_id,
+            dj.create_time,
+            dj.update_time,
+            dj.runtime_options,
+            dj.other_runtime_config,
+            du1.user_name as update_user,
+            du2.user_name as create_user,
+            df.file_type,
+            dj.source_content,
+            dj.job_content,
+            dj.file_id,
+            dj.deployed,
+            df.folder_id,
+            dj.cluster_id,
+            dj.image_id,
+            dj.motor_version_id,
+            dj.alert_mode,
+            dj.run_job_id,
+            case when dj.alert_instance_id = 0 then null
+                 else dj.alert_instance_id
+            end as alert_instance_id,
+            dj.file_tag_id,
+            dj.app_args,
+            dj.run_mode_type,
+            dft.file_tag_name,
+            dai.alert_type,
+            dc.cluster_params
+        from dpline_job dj
+        left join dpline_cluster dc on dj.cluster_id = dc.id and dc.enabled_flag = 1
+        left join dpline_file df on df.id = dj.file_id and df.enabled_flag = 1
+        left join dpline_user du1 on du1.user_code = dj.update_user and du1.enabled_flag = 1
+        left join dpline_user du2 on du2.user_code = dj.create_user and du2.enabled_flag = 1
+        left join dpline_file_tag dft on dj.file_tag_id = dft.id
+        left join dpline_alert_instance dai on dj.alert_instance_id = dai.id and dai.enabled_flag = 1
+        where dj.enabled_flag = 1
+        <if test="criteria.vo.jobName != null and criteria.vo.jobName != ''">
+            AND dj.job_name like CONCAT('%', #{criteria.vo.jobName, jdbcType=VARCHAR},'%')
+        </if>
+        <if test="criteria.vo.updateUser != null and criteria.vo.updateUser != '' ">
+            AND dj.update_user = #{criteria.vo.updateUser, jdbcType=VARCHAR}
+        </if>
+        <if test="criteria.vo.searchParams != null and criteria.vo.searchParams.size()>0 ">
+            AND dj.exec_status in
+            <foreach collection="criteria.vo.searchParams" item="jobStatus" separator="," open="(" close=")">
+                #{jobStatus}
+            </foreach>
+        </if>
+        <if test="criteria.vo.projectId != null ">
+            AND dj.project_id = #{criteria.vo.projectId, jdbcType=BIGINT}
+        </if>
+        <if test="criteria.vo.folderIds != null and criteria.vo.folderIds.size() > 0">
+            AND df.folder_id in
+            <foreach collection="criteria.vo.folderIds" item="folderId" separator="," open="(" close=")">
+                #{folderId, jdbcType=BIGINT}
+            </foreach>
+        </if>
+        <include refid="orderByClause"></include>
+    </select>
+    <select id="selectByName" resultType="com.dpline.dao.entity.Job">
+        select <include refid="column">
+                <property name="alias" value="dj"/>
+                </include>
+        from dpline_job dj
+        where job_name=#{jobName}
+    </select>
+
+    <select id="selectByFileId" resultType="com.dpline.dao.entity.Job">
+        select <include refid = "column">
+                    <property name = "alias" value = "dj"/>
+               </include>
+        from dpline_job dj where file_id=#{fileId}
+    </select>
+
+    <select id="selectByBatchFileIds" resultType="com.dpline.dao.entity.Job">
+        select <include refid="column">
+                <property name="alias" value="dj"/>
+               </include>
+        from dpline_job dj
+        where 1=1
+        <foreach collection="fileIdList" item="fileId" separator="," open="and file_id in (" close=")">
+            ${fileId}
+        </foreach>
+    </select>
+    <select id="selectById" resultType="com.dpline.dao.entity.Job">
+        select
+            distinct
+            <include refid="column">
+                <property name="alias" value="dj"/>
+            </include>,
+            du1.user_name as update_user,
+            du2.user_name as create_user,
+            df.folder_id,
+            dft.file_tag_name
+        from dpline_job dj
+                 left join dpline_file df on df.id = dj.file_id and df.enabled_flag = 1
+                 left join dpline_user du1 on du1.user_code = dj.update_user and du1.enabled_flag = 1
+                 left join dpline_user du2 on du2.user_code = dj.create_user and du2.enabled_flag = 1
+                 left join dpline_file_tag dft on dj.file_tag_id = dft.id
+        where dj.id=${id}
+    </select>
+    <select id="selectByJobStatus" resultType="com.dpline.dao.entity.Job">
+        select
+            <include refid="column">
+                <property name="alias" value="dj"/>
+            </include>
+        from dpline_job dj
+        where dj.exec_status in
+        <foreach collection="runningExecStatusList" item="i" open="(" close=")" separator=",">
+            #{i}
+        </foreach>
+    </select>
+    <select id="selectByNameAndClusterId" resultType="com.dpline.dao.entity.Job">
+        select <include refid="column">
+                   <property name="alias" value="dj"/>
+               </include>
+        from dpline_job dj where 1=1
+        <choose>
+            <when test="jobName != null and clusterId != null and projectId != null">
+                and job_name=#{jobName} and (cluster_id =${clusterId} or project_id=#{projectId})
+            </when>
+        </choose>
+
+    </select>
+    <select id="selectByMainJarId" resultType="com.dpline.dao.entity.Job">
+        select * from dpline_job where main_jar_id=${mainJarId}
+    </select>
+    <select id="selectByMainResourceId" resultType="com.dpline.dao.entity.Job">
+        select * from
+            dpline_job
+        where main_resource_id=${mainResourceId}
+    </select>
+    <select id="selectByResourceId" resultType="com.dpline.dao.entity.Job">
+        select * from
+            dpline_job
+        where motor_version_id=${motorVersionId}
+          and source_content like concat('%:',${mainResourceId},',%')
+    </select>
+    <select id="selectByClusterId" resultType="com.dpline.dao.entity.Job">
+        select * from dpline_job where cluster_id=${clusterId}
+    </select>
+    <select id="selectByAlertInstanceId" resultType="com.dpline.dao.entity.Job">
+        select
+            *
+        from
+            dpline_job
+        where alert_instance_id=${alertInstanceId}
+    </select>
+    <select id="selectProjectByJobId" resultType="com.dpline.dao.entity.Project">
+        select
+            dp.*
+        from dpline_job dj
+        inner join
+            dpline_project dp
+        on dj.project_id=dp.id
+        where dj.id=${id}
+    </select>
+</mapper>

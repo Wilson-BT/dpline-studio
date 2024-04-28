@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dpline.dao.mapper.ClusterUserMapper">
+    <sql id="baseSql">
+       id, cluster_id, enable_flag, create_time, create_user, update_time, update_user
+    </sql>
+    <resultMap id="BaseResultMap" type="com.dpline.dao.entity.ClusterUser">
+        <id column="id" jdbcType="BIGINT" property="id" />
+        <result column="cluster_id" jdbcType="INTEGER" property="clusterId" />
+        <result column="enable_flag" jdbcType="TINYINT" property="enabledFlag" />
+        <result column="create_user" jdbcType="VARCHAR" property="createUser" />
+        <result column="update_user" jdbcType="VARCHAR" property="updateUser" />
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+        <result column="user_code" jdbcType="VARCHAR" property="userCode" />
+    </resultMap>
+
+    <select id="list" resultMap="BaseResultMap">
+        select t0.id,
+            t0.cluster_id,
+            t1.user_code,
+            t1.user_name,
+            t0.enabled_flag,
+            t0.create_time,
+            t0.create_user,
+            t0.update_time,
+            t0.update_user
+            from dpline_cluster_user t0
+                left join dpline_user t1
+            on t1.user_code = t0.user_code
+            <where>
+                <if test="clusterUser.clusterId != null and clusterUser.clusterId != ''">
+                    and t0.cluster_id = #{clusterUser.clusterId}
+                </if>
+            </where>
+    </select>
+
+    <delete id="deleteRelationByUserCode">
+        delete from dpline_cluster_user where use_code=#{userCode}
+    </delete>
+
+    <delete id="deleteRelationByClusterId">
+        delete from dpline_cluster_user where cluster_id=${clusterId}
+    </delete>
+</mapper>

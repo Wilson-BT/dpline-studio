@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dpline.dao.mapper.DataSourceMapper">
+    <sql id="baseSql">
+        id, data_source_name, data_source_type, data_source_type, project_id, description, connection_params, enabled_flag, env, create_user, update_user, create_time, update_time
+    </sql>
+    <sql id="orderByClauseInfo">
+        <if test="criteria.orderByClauses != null">
+            <trim prefix=" ORDER  BY " suffix="  " suffixOverrides=",">
+                <foreach collection="criteria.orderByClauses" item="orderByObj">
+                    <if test="orderByObj.field != null and orderByObj.field != ''">
+                        <if test="orderByObj.orderByMode == 0">
+                            t0.${orderByObj.field} ASC ,
+                        </if>
+                        <if test="orderByObj.orderByMode != 0">
+                            t0.${orderByObj.field} DESC ,
+                        </if>
+                    </if>
+                </foreach>
+            </trim>
+        </if>
+    </sql>
+    <resultMap id="BaseResultMap" type="com.dpline.dao.entity.DataSource">
+        <id column="id" jdbcType="BIGINT" property="id" />
+        <result column="data_source_name" jdbcType="VARCHAR" property="dataSourceName" />
+        <result column="data_source_type" jdbcType="VARCHAR" property="dataSourceType" />
+        <result column="data_source_flag" jdbcType="VARCHAR" property="dataSourceFlag" />
+        <result column="project_id" jdbcType="BIGINT" property="projectId" />
+        <result column="description" jdbcType="VARCHAR" property="description" />
+<!--        <result column="connection_params" jdbcType="VARCHAR" property="connectionParams" typeHandler="com.dpline.dao.handler.JsonTypeHandler" />-->
+        <result column="connection_params" jdbcType="VARCHAR" property="connectionParams" />
+        <result column="env" jdbcType="VARCHAR" property="env" />
+        <result column="enabled_flag" jdbcType="TINYINT" property="enabledFlag" />
+        <result column="create_user" jdbcType="VARCHAR" property="createUser" />
+        <result column="update_user" jdbcType="VARCHAR" property="updateUser" />
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+    </resultMap>
+
+    <select id="list" resultMap="BaseResultMap">
+        select *
+            from dpline_data_source t0
+        <where>
+            <if test="criteria != null">
+                <if test="criteria.vo.dataSourceName != null and criteria.vo.dataSourceName != ''">
+                    and t0.data_source_name like concat('%', #{criteria.vo.dataSourceName, jdbcType=VARCHAR},'%')
+                </if>
+            </if>
+        </where>
+            group by t0.id
+        <include refid="orderByClauseInfo"></include>
+    </select>
+</mapper>

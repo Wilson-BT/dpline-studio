@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>dpline-studio</artifactId>
+        <groupId>com.dpline</groupId>
+        <version>0.0.4</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>dpline-dist</artifactId>
+
+    <properties>
+        <maven.compiler.source>8</maven.compiler.source>
+        <maven.compiler.target>8</maven.compiler.target>
+        <maven.deploy.skip>true</maven.deploy.skip>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.dpline</groupId>
+            <artifactId>dpline-console</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.dpline</groupId>
+            <artifactId>dpline-operator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.dpline</groupId>
+            <artifactId>dpline-flink-app-1.14</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.dpline</groupId>
+            <artifactId>dpline-flink-client-1.14</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.dpline</groupId>
+            <artifactId>dpline-flink-log</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.dpline</groupId>
+            <artifactId>dpline-flink-log-kafka2doris-1.14</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.dpline</groupId>
+            <artifactId>dpline-flink-client-1.14</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.dpline</groupId>
+            <artifactId>dpline-flink-client-1.16</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.dpline</groupId>
+            <artifactId>dpline-flink-log-kafka2doris-1.16</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.dpline</groupId>
+            <artifactId>dpline-web</artifactId>
+        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>com.dpline</groupId>-->
+<!--            <artifactId>dpline-extend</artifactId>-->
+<!--        </dependency>-->
+    </dependencies>
+
+    <profiles>
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-assembly-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>dpline-bin</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>single</goal>
+                                </goals>
+                                <configuration>
+                                    <descriptors>
+                                        <descriptor>src/main/assembly/dpline-bin.xml</descriptor>
+                                    </descriptors>
+                                    <appendAssemblyId>true</appendAssemblyId>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
+    <build>
+        <finalName>dpline-studio-${project.version}</finalName>
+    </build>
+</project>

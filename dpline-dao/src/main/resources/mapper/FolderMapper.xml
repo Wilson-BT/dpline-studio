@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dpline.dao.mapper.FolderMapper">
+    <sql id="folderColumn">
+        id,
+        folder_name,
+        parent_id,
+        project_id,
+        enabled_flag,
+        create_user,
+        update_user,
+        create_time,
+        update_time
+    </sql>
+    <select id="queryFolder" resultType="com.dpline.dao.dto.FolderDto">
+        select <include refid="folderColumn"></include>
+        from dpline_folder
+        <where>
+            enabled_flag = 1
+            <if test="folderName != null and folderName != ''">
+                and folder_name = #{folderName}
+            </if>
+            <if test="projectId != null">
+                and project_id = #{projectId}
+            </if>
+            <if test="parentId != null">
+                and parent_id = #{parentId}
+            </if>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+        </where>
+    </select>
+    <select id="getFolder" resultType="com.dpline.dao.entity.Folder">
+        select <include refid="folderColumn"></include> from dpline_folder
+        <where>
+            enabled_flag = 1
+            <if test="folderName != null and folderName != ''">
+                and folder_name = #{folderName}
+            </if>
+            <if test="projectId != null">
+                and project_id = #{projectId}
+            </if>
+            <if test="parentId != null">
+                and parent_id = #{parentId}
+            </if>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+        </where>
+    </select>
+    <select id="searchFolderAndFile" resultType="com.dpline.dao.dto.FileFolderDto">
+        select id,folder_name name,'folder' type,parent_id,'' folder_id,'' file_type,'' on_line
+        from dpline_folder
+        where enabled_flag = 1
+          and project_id = #{projectId}
+          and folder_name like concat('%',#{folderName},'%')
+
+        union all
+
+        select df.id,df.file_name name,'file' type,'' parent_id,df.folder_id,df.file_type,
+               case when dj.id is null then 0 else 1 end as is_on_line
+        from dpline_file df
+                 left join dpline_job dj on dj.file_id = df.id and dj.enabled_flag = 1
+        where df.enabled_flag = 1
+          and df.project_id = #{projectId}
+          and df.file_name like concat('%',#{folderName},'%')
+    </select>
+    <select id="searchFolder" resultType="com.dpline.dao.dto.FileFolderDto">
+        select id,folder_name name
+        from dpline_folder
+        where enabled_flag = 1
+          and project_id = #{projectId}
+          and folder_name like concat('%',#{folderName},'%')
+    </select>
+    <select id="selectByPid" resultType="com.dpline.dao.entity.Folder">
+        select * from dpline_folder where parent_id=#{parentId}
+    </select>
+</mapper>

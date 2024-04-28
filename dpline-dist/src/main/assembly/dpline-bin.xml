@@ -1,0 +1,127 @@
+<assembly
+        xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.0"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.0 http://maven.apache.org/xsd/assembly-1.1.0.xsd">
+    <id>bin</id>
+    <formats>
+        <format>tar.gz</format>
+    </formats>
+    <includeBaseDirectory>true</includeBaseDirectory>
+    <baseDirectory>${project.build.finalName}-bin</baseDirectory>
+
+    <fileSets>
+        <fileSet>
+            <directory>${basedir}/../dpline-common/src/main/resources</directory>
+            <includes>
+                <include>**/*.yaml</include>
+                <include>**/*.yml</include>
+                <include>**/*.properties</include>
+                <include>**/*.xml</include>
+                <include>**/*.json</include>
+            </includes>
+            <outputDirectory>conf</outputDirectory>
+        </fileSet>
+
+        <fileSet>
+            <directory>${basedir}/../dpline-console/src/main/resources</directory>
+            <includes>
+                <include>**/*.yaml</include>
+                <include>**/*.yml</include>
+                <include>**/*.properties</include>
+                <include>**/*.xml</include>
+                <include>**/*.json</include>
+            </includes>
+            <outputDirectory>conf</outputDirectory>
+        </fileSet>
+
+        <fileSet>
+            <directory>${basedir}/../dpline-operator/src/main/resources</directory>
+            <includes>
+                <include>**/*.yaml</include>
+                <include>**/*.yml</include>
+                <include>**/*.properties</include>
+                <include>**/*.xml</include>
+                <include>**/*.json</include>
+            </includes>
+            <outputDirectory>conf</outputDirectory>
+        </fileSet>
+
+        <fileSet>
+            <directory>${basedir}/../dpline-dao/src/main/resources</directory>
+            <includes>
+                <include>**/*.yaml</include>
+                <include>**/*.yml</include>
+                <include>**/*.properties</include>
+                <include>**/*.xml</include>
+                <include>**/*.json</include>
+            </includes>
+            <outputDirectory>conf</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>${basedir}/../dpline-web/dist</directory>
+            <includes>
+                <include>**/*.*</include>
+            </includes>
+            <outputDirectory>web</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>${basedir}/../script</directory>
+            <includes>
+                <include>start-daemon.sh</include>
+            </includes>
+            <fileMode>0755</fileMode>
+            <outputDirectory>bin</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>${basedir}/../dpline-dist/target/dpline-dist-${project.version}</directory>
+            <includes>
+                <include>**/*.*</include>
+            </includes>
+            <outputDirectory>.</outputDirectory>
+        </fileSet>
+
+    </fileSets>
+
+    <dependencySets>
+        <dependencySet>
+            <outputDirectory>lib</outputDirectory>
+            <useProjectArtifact>true</useProjectArtifact>
+            <excludes>
+                <exclude>com.dpline:dpline-dist</exclude>
+                <exclude>org.slf4j:slf4j-log4j12</exclude>
+                <exclude>org.apache.flink</exclude>
+                <exclude>com.dpline:dpline-flink-app-1.14</exclude>
+                <exclude>com.dpline:dpline-flink-log-kafka2doris-1.14</exclude>
+                <exclude>com.dpline:dpline-flink-log-kafka2doris-1.16</exclude>
+                <exclude>com.dpline:dpline-flink-log</exclude>
+            </excludes>
+        </dependencySet>
+        <dependencySet>
+            <outputDirectory>flink/flink-1.14/</outputDirectory>
+            <useProjectArtifact>true</useProjectArtifact>
+            <includes>
+                <include>com.dpline:dpline-flink-app-1.14</include>
+                <include>com.dpline:dpline-flink-client-1.14</include>
+                <include>com.dpline:dpline-flink-log-kafka2doris-1.14</include>
+            </includes>
+        </dependencySet>
+        <dependencySet>
+            <outputDirectory>flink/flink-1.16/</outputDirectory>
+            <useProjectArtifact>true</useProjectArtifact>
+            <includes>
+                <include>com.dpline:dpline-flink-client-1.16</include>
+                <include>com.dpline:dpline-flink-log-kafka2doris-1.16</include>
+            </includes>
+        </dependencySet>
+
+        <dependencySet>
+<!--            自动提交日志到kafka的kafkaAppender-->
+            <outputDirectory>extend</outputDirectory>
+            <useProjectArtifact>true</useProjectArtifact>
+            <includes>
+                <include>com.dpline:dpline-flink-log</include>
+            </includes>
+        </dependencySet>
+
+    </dependencySets>
+</assembly>

@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dpline.dao.mapper.MainResourceFileMapper">
+    <sql id="orderByClauseInfo">
+        <if test="criteria.orderByClauses != null">
+            <trim prefix=" ORDER  BY " suffix="  " suffixOverrides=",">
+                <foreach collection="criteria.orderByClauses" item="orderByObj">
+                    <if test="orderByObj.field != null and orderByObj.field != ''">
+                        <if test="orderByObj.orderByMode == 0">
+                            dmr.${orderByObj.field} ASC ,
+                        </if>
+                        <if test="orderByObj.orderByMode != 0">
+                            dmr.${orderByObj.field} DESC ,
+                        </if>
+                    </if>
+                </foreach>
+            </trim>
+        </if>
+    </sql>
+    <sql id="columns">
+        ${alias}.id,${alias}.name,${alias}.jar_function_type,${alias}.run_motor_type,${alias}.jar_auth_type,
+        ${alias}.project_id,${alias}.description,${alias}.enabled_flag,${alias}.create_user,
+        ${alias}.update_user,${alias}.create_time,${alias}.update_time
+    </sql>
+<!--    `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键',-->
+<!--    `name` varchar(100) DEFAULT NULL COMMENT '名称',-->
+<!--    `jar_function_type` varchar(20) DEFAULT NULL COMMENT 'jar包用途，MAIN，UDF, CONNECTOR, EXTENDED',-->
+<!--    `run_motor_type` varchar(20) DEFAULT NULL COMMENT '使用的计算引擎类型，flink or spark',-->
+<!--    `jar_auth_type` varchar(20) DEFAULT NULL COMMENT 'jar的适用范围 public or project',-->
+<!--    `project_id` bigint(20) DEFAULT NULL COMMENT '项目ID',-->
+<!--    `description` longtext,-->
+<!--    `enabled_flag` tinyint(4) DEFAULT NULL COMMENT '是否可用',-->
+<!--    `create_user` varchar(128) DEFAULT NULL COMMENT '创建人',-->
+<!--    `update_user` varchar(128) DEFAULT NULL COMMENT '更新人',-->
+<!--    `create_time` datetime DEFAULT CURRENT_TIMESTAMP,-->
+<!--    `update_time` datetime DEFAULT CURRENT_TIMESTAMP,-->
+    <select id="listResource" resultType="com.dpline.dao.entity.MainResourceFile">
+        select
+        <include refid="columns">
+            <property name="alias" value="dmr"/>
+        </include>
+        from dpline_main_resource dmr
+        where jar_auth_type = #{criteria.vo.jarAuthType}
+        <if test="criteria.vo.jarAuthType == 'project'">
+            and project_id=${criteria.vo.projectId}
+        </if>
+        <if test="criteria.vo.name != ''">
+            and `name`= #{criteria.vo.name}
+        </if>
+    </select>
+
+    <select id="searchSourceByName" resultType="com.dpline.dao.entity.MainResourceFile">
+        select * from
+        dpline_main_resource
+        where `name`=#{name}
+        and jar_auth_type=#{jarAuthType}
+        <if test="jarAuthType == 'project'">
+            and project_id = ${projectId}
+        </if>
+        <if test="jarFunctionType != null and jarFunctionType != ''">
+            and jar_function_type = #{jarFunctionType}
+        </if>
+    </select>
+
+    <select id="searchSourceByJarName" resultType="com.dpline.dao.entity.MainResourceFile">
+        select * from
+            dpline_main_resource dmr
+        where 1=1
+        <if test="jarFunctionType != null and jarFunctionType != ''">
+            AND dmr.jar_function_type=#{jarFunctionType}
+        </if>
+        <if test="name != null and name != ''">
+            AND dmr.name=#{name}
+        </if>
+        <choose>
+            <when test="projectId != null and projectId != '' and projectId != 0">
+                and ((dmr.project_id=${projectId} and jar_auth_type='project') or jar_auth_type='public')
+            </when>
+            <otherwise>
+                and jar_auth_type='public'
+            </otherwise>
+        </choose>
+    </select>
+    <select id="batchGetMainResourceDependNameMap" resultType="com.dpline.dao.entity.MainResourceFile">
+        select id,name
+        from  dpline_main_resource dmr
+        where 1=1
+        <foreach collection="mainResourceDependIdList" item="i" open="and dmr.id in (" close=")" separator=",">
+            ${i}
+        </foreach>
+
+    </select>
+</mapper>

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>dpline-flink</artifactId>
+        <groupId>com.dpline</groupId>
+        <version>0.0.4</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>dpline-flink-client-api</artifactId>
+
+    <properties>
+        <maven.compiler.source>8</maven.compiler.source>
+        <maven.compiler.target>8</maven.compiler.target>
+    </properties>
+    <dependencies>
+        <dependency>
+            <groupId>com.dpline</groupId>
+            <artifactId>dpline-flink-client-core</artifactId>
+        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>com.dpline</groupId>-->
+<!--            <artifactId>dpline-flink-client-1.14</artifactId>-->
+<!--        </dependency>-->
+
+<!--        <dependency>-->
+<!--            <groupId>com.dpline</groupId>-->
+<!--            <artifactId>dpline-flink-client-1.16</artifactId>-->
+<!--        </dependency>-->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+<!--            <version>4.13.2</version>-->
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+</project>

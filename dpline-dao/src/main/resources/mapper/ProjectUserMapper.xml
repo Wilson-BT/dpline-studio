@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dpline.dao.mapper.ProjectUserMapper">
+    <delete id="deleteByProjectId">
+        delete from dpline_project_user where project_id=#{projectId}
+        <if test="userRole != null">
+            AND user_role = #{userRole}
+        </if>
+    </delete>
+    <delete id="deleteProjectUser">
+        delete from dpline_project_user where project_id=#{projectId} AND user_code = #{userCode}
+    </delete>
+    <delete id="deleteByUserCode">
+        delete from dpline_project_user where user_code = #{userCode}
+    </delete>
+
+    <select id="selectIsExist" resultType="com.dpline.dao.entity.ProjectUser">
+        SELECT
+            id,
+            project_id,
+            user_code,
+            enabled_flag,
+            user_role
+        from dpline_project_user
+        where
+            enabled_flag = 1
+        <if test="projectId != null ">
+            AND project_id = #{projectId,jdbcType=BIGINT}
+        </if>
+        <if test="userCode != null ">
+            AND user_code = #{userCode,jdbcType=BIGINT}
+        </if>
+    </select>
+    <select id="getProjectUserRelByProjectId" resultType="com.dpline.dao.entity.ProjectUser">
+        select
+        id,
+        project_id,
+        user_code,
+        enable_flag
+        from dpline_project_user
+        where enable_flag=1
+        <if test="projectId != null and projectId != ''">
+            AND project_id = #{projectId}
+        </if>
+        <if test="userRole != null">
+            AND user_role = #{userRole}
+        </if>
+    </select>
+    <select id="selectByProjectId" resultType="com.dpline.dao.dto.ProjectUserInfo">
+        select
+            a.id,
+            a.project_id,
+            c.is_admin,
+            a.user_code,
+            c.user_name,
+            a.user_role,
+            a.user_role as is_leader,
+            b.project_name,
+--             b.project_code,
+            c.phone,
+            a.create_time,
+            a.create_user,
+            a.update_time,
+            a.update_user
+        from (
+              select
+                  id,
+                  project_id,
+                  user_code,
+                  user_role,
+                  create_time,
+                  create_user,
+                  update_time,
+                  update_user
+              from dpline_project_user
+              where enabled_flag=1
+                AND project_id = ${projectId}
+        )a
+        join dpline_project b on a.project_id = b.id and b.enabled_flag=1
+        join dpline_user c on a.user_code = c.user_code and c.enabled_flag=1
+    </select>
+    <select id="selectProjectUser" resultType="com.dpline.dao.entity.ProjectUser">
+        select
+        id,
+        project_id,
+        user_code,
+        enabled_flag
+        from dpline_project_user
+        where enabled_flag=1
+        <if test="projectId != null and projectId != ''">
+            AND project_id = ${projectId}
+        </if>
+        <if test="userCode != null">
+            AND user_code = #{userCode}
+        </if>
+    </select>
+</mapper>

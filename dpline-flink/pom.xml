@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>dpline-studio</artifactId>
+        <groupId>com.dpline</groupId>
+        <version>0.0.4</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>dpline-flink</artifactId>
+    <packaging>pom</packaging>
+    <modules>
+        <module>dpline-flink-1.14</module>
+        <module>dpline-flink-1.16</module>
+        <module>dpline-flink-client-core</module>
+<!--        <module>dpline-flink-client-1.14</module>-->
+        <module>dpline-flink-client-api</module>
+<!--        <module>dpline-flink-log-1.14</module>-->
+<!--        <module>dpline-app-1.14</module>-->
+<!--        <module>dpline-flink-log-kafka2doris-1.14</module>-->
+    </modules>
+    <!-- 用于处理 flink shim 包-->
+    <properties>
+        <maven.compiler.source>8</maven.compiler.source>
+        <maven.compiler.target>8</maven.compiler.target>
+    </properties>
+
+</project>

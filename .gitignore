@@ -1,0 +1,32 @@
+.DS_Store
+dpline-web/node_modules
+dpline-ui/node_modules
+dpline-web/package-lock.json
+dpline-web/yarn.lock
+dpline-web/dist
+target
+*.log
+# local env files
+.env.local
+.env.*.local
+lib/*
+web/*
+config/*
+*.jar
+# Log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Editor directories and files
+dependency-reduced-pom.xml
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.iml
+*.sw?
+

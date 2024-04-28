@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dpline.dao.mapper.LoggerViewMapper">
+    <select id="loggerViewFromOperatorTime" resultType="com.dpline.common.log.InsertMessage">
+        select
+            content,`level`,line_number,`timestamp`,class_name
+        from
+             system_analysis.flink_run_time_log
+        where 1=1
+        <if test="startTime != null and startTime != 0 ">
+            and `timestamp` &gt; ${startTime}
+        </if>
+        <if test="jobName != null and jobName != ''">
+            and app_id = #{jobName}
+        </if>
+        <choose>
+            <when test="containerType == null or containerType == ''">
+                and container_type='jobmanager'
+            </when>
+            <otherwise>
+                and container_type=#{containerType}
+            </otherwise>
+        </choose>
+            order by `timestamp`
+        <if test="limitCount != null or limitCount != ''">
+            limit ${limitCount}
+        </if>
+    </select>
+
+    <select id="logTail" resultType="com.dpline.common.log.InsertMessage">
+        select
+        content,`level`,line_number,`timestamp`,class_name
+        from system_analysis.flink_run_time_log
+        where 1=1
+        <if test="jobName != null and jobName != ''">
+            and app_id = #{jobName}
+        </if>
+        <if test="lastStartTime != 0">
+            and `timestamp` &gt; ${lastStartTime}
+        </if>
+        <choose>
+            <when test="containerType == null or containerType == ''">
+                and container_type='jobmanager'
+            </when>
+            <otherwise>
+                and container_type=#{containerType}
+            </otherwise>
+        </choose>
+            order by `timestamp` desc limit ${limitCount}
+    </select>
+    <select id="loggerViewToOperateTime" resultType="com.dpline.common.log.InsertMessage">
+        select
+        content,`level`,line_number,`timestamp`,class_name
+        from system_analysis.flink_run_time_log
+        where 1=1
+        <if test="jobName != null and jobName != ''">
+            and app_id = #{jobName}
+        </if>
+        <if test="endTime != null and endTime != 0">
+            and `timestamp` &lt; ${endTime}
+        </if>
+        <choose>
+            <when test="containerType == null or containerType == ''">
+                and container_type='jobmanager'
+            </when>
+            <otherwise>
+                and container_type=#{containerType}
+            </otherwise>
+        </choose>
+        order by `timestamp` desc limit ${limitCount}
+    </select>
+
+
+</mapper>
