@@ -24,6 +24,7 @@
     </modules>
 
     <properties>
+        <hadoop.version>3.3.4</hadoop.version>
         <java.version>1.8</java.version>
         <commons.io.version>2.4</commons.io.version>
         <poi.version>4.1.2</poi.version>
@@ -191,6 +192,16 @@
             <dependency>
                 <groupId>com.dpline</groupId>
                 <artifactId>dpline-log</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.dpline</groupId>
+                <artifactId>dpline-k8s-operator</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.dpline</groupId>
+                <artifactId>dpline-yarn-operator</artifactId>
                 <version>${project.version}</version>
             </dependency>
 <!--            <dependency>-->
@@ -380,6 +391,34 @@
                 <groupId>io.netty</groupId>
                 <artifactId>netty-all</artifactId>
                 <version>${netty.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.hadoop</groupId>
+                <artifactId>hadoop-client-api</artifactId>
+                <version>${hadoop.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.xerial.snappy</groupId>
+                        <artifactId>snappy-java</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+
+            <dependency>
+                <groupId>org.apache.hadoop</groupId>
+                <artifactId>hadoop-client-runtime</artifactId>
+                <version>${hadoop.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.google.code.findbugs</groupId>
+                        <artifactId>jsr305</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.xerial.snappy</groupId>
+                        <artifactId>snappy-java</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
         </dependencies>

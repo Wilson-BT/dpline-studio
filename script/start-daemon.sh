@@ -46,7 +46,7 @@ elif [ "$command" = "operator-server" ]; then
   LOG_BACK=$DPLINE_CONF/logback-operator.xml
   ACTIVE_FILE="operator"
   JAVA_OPS="-Xms2g -Xmx2g -Xmn2g -XX:+PrintGCDetails -Xloggc:${DPLINE_LOG}/operator-gc.log -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=dump.hprof"
-  MAIN_CLASS="com.dpline.operator.OperatorServer"
+  MAIN_CLASS="com.dpline.k8s.operator.OperatorServer"
 else
   echo "Error: No command named '$command' was found."
   exit 1

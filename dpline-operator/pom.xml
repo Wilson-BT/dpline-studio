@@ -7,19 +7,37 @@
         <groupId>com.dpline</groupId>
         <version>0.0.4</version>
     </parent>
-    <modelVersion>4.0.0</modelVersion>
-    <packaging>jar</packaging>
-    <artifactId>dpline-operator</artifactId>
+    <modules>
+        <module>dpline-yarn-operator</module>
+        <module>dpline-k8s-operator</module>
+    </modules>
 
-    <properties>
-        <maven.compiler.source>8</maven.compiler.source>
-        <maven.compiler.target>8</maven.compiler.target>
-        <spring.version>5.3.12</spring.version>
-    </properties>
+    <modelVersion>4.0.0</modelVersion>
+    <packaging>pom</packaging>
+    <artifactId>dpline-operator</artifactId>
     <dependencies>
         <dependency>
+            <groupId>cn.hutool</groupId>
+            <artifactId>hutool-all</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+            <version>5.3.14</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>com.dpline</groupId>
-            <artifactId>dpline-alert-api</artifactId>
+            <artifactId>dpline-alert-wecom</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.dpline</groupId>
+            <artifactId>dpline-remote</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -66,88 +84,6 @@
             <groupId>com.dpline</groupId>
             <artifactId>dpline-common</artifactId>
         </dependency>
-        <dependency>
-            <groupId>com.dpline</groupId>
-            <artifactId>dpline-flink-client-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.dpline</groupId>
-            <artifactId>dpline-alert-http</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.dpline</groupId>
-            <artifactId>dpline-alert-email</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.dpline</groupId>
-            <artifactId>dpline-remote</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.dpline</groupId>
-            <artifactId>dpline-alert-wecom</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.flink</groupId>
-            <artifactId>flink-kubernetes_2.11</artifactId>
-            <version>1.14.5</version>
-            <scope>provided</scope>
-        </dependency>
 
-<!--        <dependency>-->
-<!--            <groupId>org.apache.flink</groupId>-->
-<!--            <artifactId>flink-core</artifactId>-->
-<!--            <version>1.14.5</version>-->
-<!--        </dependency>-->
-        <dependency>
-            <groupId>cn.hutool</groupId>
-            <artifactId>hutool-all</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-<!--            <version>RELEASE</version>-->
-            <scope>test</scope>
-        </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.apache.flink</groupId>-->
-<!--            <artifactId>flink-clients_2.11</artifactId>-->
-<!--            <version>1.14.5</version>-->
-<!--            <scope>compile</scope>-->
-<!--        </dependency>-->
-        <dependency>
-            <groupId>com.dpline</groupId>
-            <artifactId>dpline-flink-client-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-test</artifactId>
-            <version>5.3.14</version>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
-
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <addClasspath>true</addClasspath>
-                            <mainClass>com.dpline.operator.OperatorServer</mainClass> <!-- 你的主类名 -->
-                        </manifest>
-                    </archive>
-                    <excludes>
-                        <exclude>*.yaml</exclude>
-                        <exclude>*.yml</exclude>
-                        <exclude>*.xml</exclude>
-                        <exclude>*.properties</exclude>
-                    </excludes>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
-
 </project>
