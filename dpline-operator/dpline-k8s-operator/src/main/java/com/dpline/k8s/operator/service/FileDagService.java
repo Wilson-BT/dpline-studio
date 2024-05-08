@@ -8,7 +8,7 @@ import com.dpline.common.request.FlinkDagRequest;
 import com.dpline.common.request.FlinkDagResponse;
 import com.dpline.common.request.JarResource;
 import com.dpline.common.util.*;
-import com.dpline.common.minio.Minio;
+import com.dpline.common.store.Minio;
 import com.dpline.flink.api.TaskOperateProxy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

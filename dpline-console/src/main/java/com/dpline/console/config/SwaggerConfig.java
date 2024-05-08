@@ -28,7 +28,7 @@ public class SwaggerConfig {
         return new ApiInfoBuilder()
                 .title("DPLine-Api")
                 .description("DPLine-Api实时展示")
-                .contact(new Contact("Wilson", null, "wangcs@topsports.com.cn"))
+                .contact(new Contact("Wilson", null, "wangcs@dpline.com.cn"))
                 .version("1.0")
                 .build();
     }

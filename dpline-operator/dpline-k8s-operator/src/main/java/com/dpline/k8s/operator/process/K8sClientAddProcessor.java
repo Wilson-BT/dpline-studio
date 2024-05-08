@@ -2,7 +2,7 @@ package com.dpline.k8s.operator.process;
 
 import com.dpline.common.enums.ResponseStatus;
 import com.dpline.common.params.K8sClusterParams;
-import com.dpline.common.request.K8sClusterResponse;
+import com.dpline.common.request.ClusterResponse;
 import com.dpline.common.util.Asserts;
 import com.dpline.common.util.ExceptionUtil;
 import com.dpline.common.util.JSONUtils;
@@ -32,24 +32,21 @@ public class K8sClientAddProcessor implements NettyRequestProcessor {
     K8sClusterManager k8sClusterManager;
 
     @Autowired
-    ClusterMapper clusterMapper;
-
-    @Autowired
     WatcherConfig watcherConfig;
 
     private static Logger logger = LoggerFactory.getLogger(K8sClientAddProcessor.class);
 
     @Override
     public void process(Channel channel, Command command) {
-        Preconditions.checkArgument(CommandType.K8S_CLIENT_ADD_REQUEST == command.getType(), String.format("invalid command type: %s", command.getType()));
+        Preconditions.checkArgument(CommandType.CLIENT_ADD_REQUEST == command.getType(), String.format("invalid command type: %s", command.getType()));
         try{
-            K8sClientAddCommand k8sClientAddCommand = JSONUtils.parseObject(command.getBody(), K8sClientAddCommand.class);
+            ClientAddCommand k8sClientAddCommand = JSONUtils.parseObject(command.getBody(), ClientAddCommand.class);
             K8sClusterParams k8sClusterParams = JSONUtils.parseObject(k8sClientAddCommand.getNewClusterParamsContent(), K8sClusterParams.class);
             logger.info("Create new Cluster {}",k8sClusterParams);
             if(Asserts.isNull(k8sClusterParams)){
                 logger.error("K8sClusterParams is not exists.");
                 channel.writeAndFlush(
-                        new K8sClientAddResponseCommand(new K8sClusterResponse(ResponseStatus.FAIL))
+                        new ClientAddResponseCommand(new ClusterResponse(ResponseStatus.FAIL))
                                 .convert2Command(command.getOpaque()));
                 return;
             }
@@ -60,16 +57,16 @@ public class K8sClientAddProcessor implements NettyRequestProcessor {
                         watcherConfig.getCacheK8sClientNum());
             if(!k8sClient.isPresent()){
                 channel.writeAndFlush(
-                    new K8sClientAddResponseCommand(new K8sClusterResponse(ResponseStatus.FAIL))
+                    new ClientAddResponseCommand(new ClusterResponse(ResponseStatus.FAIL))
                         .convert2Command(command.getOpaque()));
                 return;
             }
-        }catch (Exception e) {
+        } catch (Exception e) {
             logger.error(ExceptionUtil.exceptionToString(e));
         }
         channel.writeAndFlush(
-            new K8sClientAddResponseCommand(
-                new K8sClusterResponse(ResponseStatus.SUCCESS)
+            new ClientAddResponseCommand(
+                new ClusterResponse(ResponseStatus.SUCCESS)
             ).convert2Command(command.getOpaque())
         );
     }

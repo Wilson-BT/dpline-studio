@@ -6,7 +6,7 @@ import com.dpline.common.util.*;
 import com.dpline.console.exception.ServiceException;
 import com.dpline.console.service.GenericService;
 import com.dpline.console.util.ContextUtils;
-import com.dpline.common.minio.Minio;
+import com.dpline.common.store.Minio;
 import com.dpline.dao.dto.JarFileDto;
 import java.net.URLDecoder;
 

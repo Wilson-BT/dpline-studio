@@ -31,13 +31,23 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
      * @param path
      * @return
      */
-    public static boolean checkDirExist(String path) throws IOException {
+    public static boolean checkDirExist(String path) {
         if (StringUtils.isEmpty(path)) {
             return false;
         }
         File file = new File(path);
         return file.exists() && file.isDirectory();
     }
+
+    // 列出目录下的所有文件
+    public static File[] listFiles(String path) {
+        if (!checkDirExist(path)) {
+            return new File[0];
+        }
+        File file = new File(path);
+        return file.listFiles();
+    }
+
 
     /**
      * 检查文件是否存在
@@ -180,6 +190,13 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
         }
 
         return false;
+    }
+    public static String resolvePath(String path,String child){
+        File file = new File(path, child);
+        if (file.exists()){
+            return file.getAbsolutePath();
+        }
+        return "";
     }
 
 //    public static void main(String[] args) {

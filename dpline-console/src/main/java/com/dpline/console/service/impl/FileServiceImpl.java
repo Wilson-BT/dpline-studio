@@ -581,7 +581,7 @@ public class FileServiceImpl extends GenericService<File, Long> {
                 .build();
 
         FileDagResponseCommand fileDagResponseCommand = (FileDagResponseCommand) nettyClientService.sendCommand(
-            new FileDagCommand(flinkDagRequest), FileDagResponseCommand.class);
+            ClusterType.KUBERNETES,new FileDagCommand(flinkDagRequest), FileDagResponseCommand.class);
 
         if(Asserts.isNull(fileDagResponseCommand) || Asserts.isNull(fileDagResponseCommand.getFlinkDagResponse())){
             putMsg(result,Status.COMMUNICATION_ERROR);

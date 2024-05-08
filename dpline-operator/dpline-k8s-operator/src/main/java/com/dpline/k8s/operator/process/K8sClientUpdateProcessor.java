@@ -36,9 +36,9 @@ public class K8sClientUpdateProcessor implements NettyRequestProcessor {
 
     @Override
     public void process(Channel channel, Command command) throws Exception {
-        Preconditions.checkArgument(CommandType.K8S_CLIENT_UPDATE_REQUEST == command.getType(), String.format("invalid command type: %s", command.getType()));
+        Preconditions.checkArgument(CommandType.CLIENT_UPDATE_REQUEST == command.getType(), String.format("invalid command type: %s", command.getType()));
         try {
-            K8sClientUpdateCommand k8sClientUpdateCommand = JSONUtils.parseObject(command.getBody(), K8sClientUpdateCommand.class);
+            ClientUpdateCommand k8sClientUpdateCommand = JSONUtils.parseObject(command.getBody(), ClientUpdateCommand.class);
             K8sClusterParams oldK8sClusterParams = JSONUtils.parseObject(k8sClientUpdateCommand.getOldClusterParamsContent(), K8sClusterParams.class);
             K8sClusterParams newK8sClusterParams = JSONUtils.parseObject(k8sClientUpdateCommand.getNewClusterParamsContent(), K8sClusterParams.class);
             Long clusterEntityId = k8sClientUpdateCommand.getClusterEntityId();
@@ -49,7 +49,7 @@ public class K8sClientUpdateProcessor implements NettyRequestProcessor {
                 logger.info("Namespace and kubePath is same as old cluster, just update cached K8sClusterParams");
                 k8sClusterManager.updateK8sClusterIdConfigMap(clusterEntityId,newK8sClusterParams);
                 channel.writeAndFlush(
-                        new K8sClientUpdateResponseCommand(ResponseStatus.SUCCESS,"")
+                        new ClientUpdateResponseCommand(ResponseStatus.SUCCESS,"")
                                 .convert2Command(command.getOpaque())
                 );
                 return;
@@ -63,7 +63,7 @@ public class K8sClientUpdateProcessor implements NettyRequestProcessor {
                             newK8sClusterParams,
                             watcherConfig.getCacheK8sClientNum());
             if(k8sClient.isPresent()){
-                channel.writeAndFlush(new K8sClientUpdateResponseCommand(ResponseStatus.SUCCESS,"")
+                channel.writeAndFlush(new ClientUpdateResponseCommand(ResponseStatus.SUCCESS,"")
                         .convert2Command(command.getOpaque()));
                 return;
             }
@@ -72,7 +72,7 @@ public class K8sClientUpdateProcessor implements NettyRequestProcessor {
         }
         // K8sClientDelCommand
         channel.writeAndFlush(
-                new K8sClientUpdateResponseCommand(
+                new ClientUpdateResponseCommand(
                         ResponseStatus.FAIL,
                         "Create new client failed"
                 ).convert2Command(command.getOpaque()));

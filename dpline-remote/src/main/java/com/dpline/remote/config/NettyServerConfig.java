@@ -2,10 +2,15 @@
 package com.dpline.remote.config;
 
 import com.dpline.common.Constants;
+import com.dpline.common.enums.ClusterType;
 import com.dpline.common.params.CommonProperties;
 import com.dpline.common.util.Asserts;
 import com.dpline.common.util.PropertyUtils;
 import com.dpline.common.util.StringUtils;
+import com.dpline.remote.util.RpcAddress;
+
+import javax.xml.bind.PropertyException;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  *  netty server config
@@ -40,27 +45,30 @@ public class NettyServerConfig {
     /**
      *  listen port
      */
-    private int listenPort = 50055;
+//    private int listenPort = 50055;
 
-    public String getServerHost() {
-        String property = CommonProperties.getOperatorListenHost();
-        if(StringUtils.isNotEmpty(property)){
-            return property;
-        }
-        return  "localhost";
+    private ConcurrentHashMap<String, RpcAddress> rpcAddressMap = new ConcurrentHashMap<String, RpcAddress>();
+
+    public NettyServerConfig() {
+        RpcAddress yarnRpcAddress = new RpcAddress(CommonProperties.getYarnOperatorListenHost(),
+                CommonProperties.getYarnOperatorListenPort());
+        RpcAddress K8sRpcAddress = new RpcAddress(CommonProperties.getK8sOperatorListenHost(),
+                CommonProperties.getK8sOperatorListenPort());
+        rpcAddressMap.put(ClusterType.YARN.getValue(),yarnRpcAddress);
+        rpcAddressMap.put(ClusterType.KUBERNETES.getValue(),K8sRpcAddress);
     }
 
-    public int getListenPort() {
-        if(CommonProperties.getOperatorListenPort() > 0){
-           return  CommonProperties.getOperatorListenPort();
-        }
-
-        return listenPort;
+    public String getServerHost(ClusterType clusterType) {
+        return rpcAddressMap.get(clusterType.getValue()).getIp();
     }
 
-    public void setListenPort(int listenPort) {
-        this.listenPort = listenPort;
+    public int getListenPort(ClusterType clusterType){
+        return rpcAddressMap.get(clusterType.getValue()).getPort();
     }
+
+//    public void setListenPort(int listenPort) {
+//        this.listenPort = listenPort;
+//    }
 
     public int getSoBacklog() {
         return soBacklog;

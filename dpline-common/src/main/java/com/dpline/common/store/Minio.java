@@ -1,4 +1,4 @@
-package com.dpline.common.minio;
+package com.dpline.common.store;
 
 import com.dpline.common.enums.MinioResourceType;
 import com.dpline.common.util.JSONUtils;

@@ -2,9 +2,24 @@ package com.dpline.common.enums;
 
 public enum ClusterType {
 
+    /**
+     * yarn
+     */
     YARN("yarn"),
+
+    /**
+     * kubernetes
+     */
     KUBERNETES("kubernetes"),
+
+    /**
+     * local
+     */
     LOCAL("local"),
+
+    /**
+     * remote 本地模式
+     */
     REMOTE("remote");
 
     private String value;

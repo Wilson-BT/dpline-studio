@@ -56,23 +56,23 @@ public enum CommandType {
     /**
      * k8s client stop and remove
      */
-    K8S_CLIENT_REMOVE_REQUEST,
+    CLIENT_REMOVE_REQUEST,
 
-    K8S_CLIENT_REMOVE_RESPONSE,
+    CLIENT_REMOVE_RESPONSE,
 
     /**
      * k8s client add and start
      */
-    K8S_CLIENT_ADD_REQUEST,
+    CLIENT_ADD_REQUEST,
 
-    K8S_CLIENT_ADD_RESPONSE,
+    CLIENT_ADD_RESPONSE,
 
     /**
      * k8s client 更新
      */
-    K8S_CLIENT_UPDATE_REQUEST,
+    CLIENT_UPDATE_REQUEST,
 
-    K8S_CLIENT_UPDATE_RESPONSE,
+    CLIENT_UPDATE_RESPONSE,
 
     /**
      * delete ingress

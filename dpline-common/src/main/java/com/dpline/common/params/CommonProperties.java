@@ -1,6 +1,7 @@
 package com.dpline.common.params;
 
 
+import com.dpline.common.enums.ClusterType;
 import com.dpline.common.enums.ResFsType;
 import com.dpline.common.util.PropertyUtils;
 import com.dpline.common.util.StringUtils;
@@ -23,14 +24,18 @@ public class CommonProperties {
 
     private final static String K8S_LOCAL_PATH_PREFIX = "k8s.local.path.prefix";
 
-    private final static String OPERATOR_LISTEN_HOST = "operator.listen.host";
+    private final static String YARN_OPERATOR_LISTEN_HOST = "operator.yarn.listen.host";
 
-    private final static String OPERATOR_LISTEN_PORT="operator.listen.port";
+    private final static String YARN_OPERATOR_LISTEN_PORT = "operator.yarn.listen.port";
+
+    private final static String K8S_OPERATOR_LISTEN_HOST = "operator.k8s.listen.host";
+
+    private final static String K8S_OPERATOR_LISTEN_PORT="operator.k8s.listen.port";
 
     private final static String MONITOR_PROMETHEUS_URL="monitor.prometheus.url";
 
     // TODO 准备置为失效
-    private final static String MONITOR_MOTOR_INGRESS_NAME="monitor.motor.ingress.name";
+    private final static String K8S_MONITOR_MOTOR_INGRESS_NAME = "k8s.monitor.ingress.name";
 
 
     public static String getDataBasedirPath() {
@@ -43,13 +48,20 @@ public class CommonProperties {
     }
 
 
-    public static String getOperatorListenHost() {
-        return PropertyUtils.getProperty(OPERATOR_LISTEN_HOST,"127.0.0.1");
+    public static String getYarnOperatorListenHost() {
+        return PropertyUtils.getProperty(YARN_OPERATOR_LISTEN_HOST,"127.0.0.1");
+    }
+    public static String getK8sOperatorListenHost() {
+        return PropertyUtils.getProperty(YARN_OPERATOR_LISTEN_HOST,"127.0.0.1");
+    }
+
+    public static Integer getYarnOperatorListenPort() {
+        return PropertyUtils.getInt(YARN_OPERATOR_LISTEN_PORT,50055);
     }
 
 
-    public static Integer getOperatorListenPort() {
-        return PropertyUtils.getInt(OPERATOR_LISTEN_PORT,50055);
+    public static Integer getK8sOperatorListenPort() {
+        return PropertyUtils.getInt(YARN_OPERATOR_LISTEN_PORT,50055);
     }
 
     public static String getMonitorPrometheusUrl(String defaultValue) {

@@ -33,7 +33,7 @@ public class FlinkTest {
             bodyMap.put("target-directory",savePointPath);
         }
         try {
-            String content = HttpUtils.doStringBodyPost("http://flink.topsports.com.cn/tidb-doris-retail-sync-retail-mps-rest/jobs/a08dacebb30900000000000000000000/savepoints", JSONUtils.toJsonString(bodyMap));
+            String content = HttpUtils.doStringBodyPost("http://flink.dpline.com.cn/tidb-doris-retail-sync-retail-mps-rest/jobs/a08dacebb30900000000000000000000/savepoints", JSONUtils.toJsonString(bodyMap));
             System.out.println(content);
         } catch (Exception e) {
             e.printStackTrace();

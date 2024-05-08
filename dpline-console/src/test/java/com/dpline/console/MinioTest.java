@@ -2,7 +2,7 @@ package com.dpline.console;
 
 import com.dpline.common.util.TaskPathResolver;
 import com.dpline.console.service.impl.SavePointServiceImpl;
-import com.dpline.common.minio.Minio;
+import com.dpline.common.store.Minio;
 import io.minio.errors.*;
 import io.minio.messages.Item;
 import org.junit.Test;

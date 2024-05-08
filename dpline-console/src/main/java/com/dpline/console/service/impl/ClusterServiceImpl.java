@@ -3,6 +3,7 @@ package com.dpline.console.service.impl;
 import com.dpline.common.enums.*;
 import com.dpline.common.params.JobConfig;
 import com.dpline.common.params.K8sClusterParams;
+import com.dpline.common.params.YarnClusterParams;
 import com.dpline.common.util.*;
 import com.dpline.console.service.ClusterService;
 import com.dpline.console.service.GenericService;
@@ -67,10 +68,15 @@ public class ClusterServiceImpl extends GenericService<Cluster, Long> implements
         }
         try {
             cluster.setId(CodeGenerateUtils.getInstance().genCode());
-            K8sClientAddCommand k8sClientAddCommand = new K8sClientAddCommand(cluster.getId(),cluster.getClusterParams());
-            K8sClientAddResponseCommand k8sClientAddResponseCommand = (K8sClientAddResponseCommand) nettyClientService.sendCommand(k8sClientAddCommand, K8sClientAddResponseCommand.class);
-            if (Asserts.isNull(k8sClientAddResponseCommand)
-                    || k8sClientAddResponseCommand.getK8sClusterResponse().getResponseStatus().equals(ResponseStatus.FAIL)) {
+            ClientAddCommand clientAddCommand = new ClientAddCommand(cluster.getId(),cluster.getClusterParams());
+            // add new client to operator
+            ClientAddResponseCommand clientAddResponseCommand =
+                    (ClientAddResponseCommand) nettyClientService.sendCommand(
+                                        ClusterType.of(cluster.getClusterType()),
+                                        clientAddCommand,
+                                        ClientAddResponseCommand.class);
+            if (Asserts.isNull(clientAddResponseCommand)
+                    || clientAddResponseCommand.getClusterResponse().getResponseStatus().equals(ResponseStatus.FAIL)) {
                 putMsg(result, Status.CLUSTER_CREATE_ERROR);
                 return result;
             }
@@ -113,14 +119,14 @@ public class ClusterServiceImpl extends GenericService<Cluster, Long> implements
             putMsg(result, Status.CLUSTER_BOUNDED_JOB_EXIST,jobs.get(0).getJobName());
             return result;
         }
-        K8sClientDelCommand k8sClientDelCommand = new K8sClientDelCommand(cluster.getId());
-        K8sClientDelResponseCommand k8sClientDelResponseCommand =
-            (K8sClientDelResponseCommand) nettyClientService.sendCommand(k8sClientDelCommand, K8sClientDelResponseCommand.class);
-        if (Asserts.isNull(k8sClientDelResponseCommand)) {
+        ClientDelCommand clientDelCommand = new ClientDelCommand(cluster.getId());
+        ClientDelResponseCommand clientDelResponseCommand =
+            (ClientDelResponseCommand) nettyClientService.sendCommand(ClusterType.of(cluster.getClusterType()),clientDelCommand, ClientDelResponseCommand.class);
+        if (Asserts.isNull(clientDelResponseCommand)) {
             putMsg(result, Status.CLUSTER_DELETE_ERROR);
             return result;
         }
-        if (k8sClientDelResponseCommand.getK8sClusterResponse().getResponseStatus().equals(ResponseStatus.FAIL)) {
+        if (clientDelResponseCommand.getClusterResponse().getResponseStatus().equals(ResponseStatus.FAIL)) {
             putMsg(result, Status.CLUSTER_DELETE_ERROR);
             return result;
         }
@@ -154,7 +160,7 @@ public class ClusterServiceImpl extends GenericService<Cluster, Long> implements
                 putMsg(result,Status.CLUSTER_BOUNDED_JOB_EXIST,jobList.get(0).getJobName());
                 return result;
             }
-            isSuccess = remoteDeleteK8sClient(cluster.getId());
+            isSuccess = remoteDeleteK8sClient(oldCluster);
         }
         if (isSuccess){
             oldCluster.setId(cluster.getId());
@@ -166,20 +172,22 @@ public class ClusterServiceImpl extends GenericService<Cluster, Long> implements
     }
 
     private boolean remoteAddK8sClient(Cluster cluster){
-        K8sClientAddCommand k8sClientAddCommand = new K8sClientAddCommand(cluster.getId(),cluster.getClusterParams());
-        K8sClientAddResponseCommand k8sClientAddResponseCommand = (K8sClientAddResponseCommand) nettyClientService.sendCommand(k8sClientAddCommand, K8sClientAddResponseCommand.class);
-        if(Asserts.isNull(k8sClientAddResponseCommand) ||
-            k8sClientAddResponseCommand.getK8sClusterResponse().getResponseStatus().equals(ResponseStatus.FAIL)){
+        ClientAddCommand clientAddCommand = new ClientAddCommand(cluster.getId(),cluster.getClusterParams());
+        ClientAddResponseCommand clientAddResponseCommand = (ClientAddResponseCommand) nettyClientService.sendCommand(
+                ClusterType.of(cluster.getClusterType()),clientAddCommand, ClientAddResponseCommand.class);
+        if(Asserts.isNull(clientAddResponseCommand) ||
+                clientAddResponseCommand.getClusterResponse().getResponseStatus().equals(ResponseStatus.FAIL)){
             return false;
         }
         return true;
     }
 
-    private boolean remoteDeleteK8sClient(Long clusterId){
-        K8sClientDelCommand k8sClientDelCommand = new K8sClientDelCommand(clusterId);
-        K8sClientDelResponseCommand k8sClientDelResponseCommand = (K8sClientDelResponseCommand)nettyClientService.sendCommand(k8sClientDelCommand, K8sClientDelResponseCommand.class);
-        if(Asserts.isNull(k8sClientDelResponseCommand) ||
-            k8sClientDelResponseCommand.getK8sClusterResponse().getResponseStatus().equals(ResponseStatus.FAIL)){
+    private boolean remoteDeleteK8sClient(Cluster cluster){
+        ClientDelCommand clientDelCommand = new ClientDelCommand(cluster.getId());
+        ClientDelResponseCommand clientDelResponseCommand = (ClientDelResponseCommand)nettyClientService.sendCommand(
+                ClusterType.of(cluster.getClusterType()),clientDelCommand, ClientDelResponseCommand.class);
+        if(Asserts.isNull(clientDelResponseCommand) ||
+                clientDelResponseCommand.getClusterResponse().getResponseStatus().equals(ResponseStatus.FAIL)){
             return false;
         }
         return true;
@@ -205,16 +213,24 @@ public class ClusterServiceImpl extends GenericService<Cluster, Long> implements
 
 
         String clusterParams = cluster.getClusterParams();
-        // params can`t be empty
-        K8sClusterParams k8sClusterParams = JSONUtils.parseObject(clusterParams, K8sClusterParams.class);
-        if(Asserts.isNull(k8sClusterParams)){
+        if(Asserts.isNull(clusterParams)){
             putMsg(result, Status.CLUSTER_UPDATE_ERROR);
             return result;
         }
-
-        if(StringUtils.isEmpty(k8sClusterParams.getNameSpace()) || StringUtils.isEmpty(k8sClusterParams.getKubePath())){
-            putMsg(result, Status.CLUSTER_PARAMS_IS_EMPTY);
-            return result;
+        // params is not null
+        if(cluster.getClusterType().equals(ClusterType.KUBERNETES.getValue())){
+            // params can`t be empty, K8s mode
+            K8sClusterParams k8sClusterParams = JSONUtils.parseObject(clusterParams, K8sClusterParams.class);
+            if(StringUtils.isEmpty(k8sClusterParams.getNameSpace()) || StringUtils.isEmpty(k8sClusterParams.getKubePath())){
+                putMsg(result, Status.CLUSTER_PARAMS_IS_EMPTY);
+                return result;
+            }
+        } else if(cluster.getClusterType().equals(ClusterType.YARN.getValue())){
+            YarnClusterParams yarnClusterParams = JSONUtils.parseObject(clusterParams, YarnClusterParams.class);
+            if(StringUtils.isEmpty(yarnClusterParams.getHadoopConfDir())){
+                putMsg(result, Status.CLUSTER_PARAMS_IS_EMPTY);
+                return result;
+            }
         }
         // check same cluster
         List<Cluster> clusters = this.getMapper().selectByClusterParamsAndId(cluster.getId(), clusterParams);
@@ -237,15 +253,15 @@ public class ClusterServiceImpl extends GenericService<Cluster, Long> implements
         }
         // no bounded job, then update and reCreate k8s client
         // if cluster kubePath and namespace is changed, need delete and reCreate new k8s client
-        K8sClientUpdateCommand k8sClientUpdateCommand = new K8sClientUpdateCommand(
+        ClientUpdateCommand clientUpdateCommand = new ClientUpdateCommand(
                 cluster.getId(),
                 oldCluster.getClusterParams(),
                 cluster.getClusterParams());
-        K8sClientUpdateResponseCommand k8sClientUpdateResponseCommand = (K8sClientUpdateResponseCommand)nettyClientService.sendCommand(
-            k8sClientUpdateCommand, K8sClientUpdateResponseCommand.class);
-        if(Asserts.isNull(k8sClientUpdateResponseCommand) ||
-                        k8sClientUpdateResponseCommand.getResponseStatus().equals(ResponseStatus.FAIL)){
-            result.setMsg(k8sClientUpdateResponseCommand.getMsg());
+        ClientUpdateResponseCommand clientUpdateResponseCommand = (ClientUpdateResponseCommand)nettyClientService.sendCommand(
+            ClusterType.of(cluster.getClusterType()),clientUpdateCommand, ClientUpdateResponseCommand.class);
+        if(Asserts.isNull(clientUpdateResponseCommand) ||
+                clientUpdateResponseCommand.getResponseStatus().equals(ResponseStatus.FAIL)){
+            result.setMsg(clientUpdateResponseCommand.getMsg());
             return result;
         }
         int updateCnt = update(cluster);

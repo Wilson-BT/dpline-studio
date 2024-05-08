@@ -3,7 +3,7 @@ package com.dpline.console.service.impl;
 import com.dpline.common.Constants;
 import com.dpline.common.MotorKeyConstants;
 import com.dpline.common.enums.*;
-import com.dpline.common.minio.Minio;
+import com.dpline.common.store.Minio;
 import com.dpline.common.params.*;
 import com.dpline.common.request.*;
 import com.dpline.common.util.*;
@@ -26,7 +26,6 @@ import com.dpline.dao.rto.JobRto;
 import com.dpline.remote.command.*;
 import com.dpline.remote.future.InvokeCallback;
 import com.dpline.remote.future.ResponseFuture;
-import io.minio.errors.*;
 import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,9 +35,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
@@ -536,7 +532,7 @@ public class JobServiceImpl extends GenericService<Job, Long> {
             return true;
         }
         // change and run, send alert change
-        TaskAlertEditResponseCommand taskAlertEditResponseCommand = (TaskAlertEditResponseCommand) nettyClientService.sendCommand(new TaskAlertEditCommand(
+        TaskAlertEditResponseCommand taskAlertEditResponseCommand = (TaskAlertEditResponseCommand) nettyClientService.sendCommand(ClusterType.KUBERNETES,new TaskAlertEditCommand(
             TaskAlertEditRequest.builder()
                 .jobId(job.getId())
                 .runJobId(job.getRunJobId())
@@ -595,6 +591,7 @@ public class JobServiceImpl extends GenericService<Job, Long> {
             logger.info("Operate has been insert into cache");
 
             nettyClientService.sendCommandAsync(
+                    ClusterType.KUBERNETES,
                 new TaskRunCommand(JSONUtils.toJsonString(req),
                                    req.getRunModeType().getClusterType().getValue(),
                                    MDC.get(Constants.TRACE_ID)
@@ -777,6 +774,7 @@ public class JobServiceImpl extends GenericService<Job, Long> {
 
         TaskStopResponseCommand taskStopResponseCommand =
             (TaskStopResponseCommand) nettyClientService.sendCommand(
+                    ClusterType.KUBERNETES,
                 new TaskStopCommand(flinkStopRequest,
                     flinkStopRequest.getRunModeType().getClusterType().getValue(),
                     MDC.get(Constants.TRACE_ID)),
@@ -870,6 +868,7 @@ public class JobServiceImpl extends GenericService<Job, Long> {
             triggerSavepoint -> {
                 TaskTriggerResponseCommand taskStopResponseCommand =
                     (TaskTriggerResponseCommand) nettyClientService.sendCommand(
+                            ClusterType.KUBERNETES,
                         new TaskTriggerCommand(
                             triggerSavepoint,
                             triggerSavepoint

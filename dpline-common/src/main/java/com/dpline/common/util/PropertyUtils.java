@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.Properties;
 
 import static com.dpline.common.Constants.COMMON_PROPERTIES_PATH;
@@ -105,6 +106,8 @@ public class PropertyUtils {
         return defaultValue;
     }
 
-
+    public static String getPathFromEnv(String envKey) {
+        return Optional.ofNullable(System.getenv(envKey)).orElse(System.getProperty(envKey));
+    }
 
 }

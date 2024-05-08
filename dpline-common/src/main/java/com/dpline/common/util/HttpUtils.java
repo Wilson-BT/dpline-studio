@@ -135,6 +135,15 @@ public class HttpUtils {
         return getExecute(httpget, httpclient);
     }
 
+    public static String doGetWithConfig(URI url,RequestConfig config) {
+        CloseableHttpClient httpclient = HttpUtils.getInstance();
+        HttpGet httpget = new HttpGet(url);
+        if (config != null){
+            httpget.setConfig(config);
+        }
+        return getExecute(httpget, httpclient);
+    }
+
 
     /**
      * get http request content

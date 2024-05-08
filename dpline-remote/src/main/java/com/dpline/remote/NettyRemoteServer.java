@@ -1,6 +1,7 @@
 package com.dpline.remote;
 
 import com.dpline.common.Constants;
+import com.dpline.common.enums.ClusterType;
 import com.dpline.remote.code.NettyDecoder;
 import com.dpline.remote.code.NettyEncoder;
 import com.dpline.remote.expection.RemoteException;
@@ -97,7 +98,7 @@ public class NettyRemoteServer {
     /**
      * server start
      */
-    public void start() {
+    public void start(ClusterType clusterType) {
         if (isStarted.compareAndSet(false, true)) {
             this.serverBootstrap
                     .group(this.bossGroup, this.workGroup)
@@ -118,17 +119,17 @@ public class NettyRemoteServer {
 
             ChannelFuture future;
             try {
-                future = serverBootstrap.bind(serverConfig.getListenPort()).sync();
+                future = serverBootstrap.bind(serverConfig.getListenPort(clusterType)).sync();
             } catch (Exception e) {
                 logger.error("NettyRemoteServer bind fail {}, exit", e.getMessage(), e);
-                throw new RemoteException(String.format(NETTY_BIND_FAILURE_MSG, serverConfig.getListenPort()));
+                throw new RemoteException(String.format(NETTY_BIND_FAILURE_MSG, serverConfig.getListenPort(clusterType)));
             }
             if (future.isSuccess()) {
-                logger.info("NettyRemoteServer bind success at port : {}", serverConfig.getListenPort());
+                logger.info("NettyRemoteServer bind success at port : {}", serverConfig.getListenPort(clusterType));
             } else if (future.cause() != null) {
-                throw new RemoteException(String.format(NETTY_BIND_FAILURE_MSG, serverConfig.getListenPort()), future.cause());
+                throw new RemoteException(String.format(NETTY_BIND_FAILURE_MSG, serverConfig.getListenPort(clusterType)), future.cause());
             } else {
-                throw new RemoteException(String.format(NETTY_BIND_FAILURE_MSG, serverConfig.getListenPort()));
+                throw new RemoteException(String.format(NETTY_BIND_FAILURE_MSG, serverConfig.getListenPort(clusterType)));
             }
         }
     }

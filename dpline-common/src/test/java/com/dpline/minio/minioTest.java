@@ -1,7 +1,6 @@
 package com.dpline.minio;
 
 
-import com.dpline.common.minio.Minio;
 import org.junit.Test;
 
 public class minioTest {

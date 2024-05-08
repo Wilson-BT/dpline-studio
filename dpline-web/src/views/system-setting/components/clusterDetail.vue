@@ -36,6 +36,23 @@
           </a-select>
         </a-form-item>
 
+        <a-form-item v-if="clusterInfo.clusterType === 'yarn'" class="name-url">
+          <p>HADOOP_CONF_DIR<span>*</span></p>
+          <a-input v-model="clusterInfo.hadoopConfDir"
+                   class="name"
+                   placeholder="请输入HADOOP_CONF_DIR">
+          </a-input>
+        </a-form-item>
+
+        <a-form-item v-if="clusterInfo.clusterType === 'yarn'" class="name-url">
+          <p>YARN_PROXY_URL<span>*</span></p>
+          <a-input v-model="clusterInfo.yarnProxyUrl"
+                   class="name"
+                   placeholder="请输入YARN_PROXY_URL">
+          </a-input>
+        </a-form-item>
+
+
         <a-form-item v-if="clusterInfo.clusterType === 'kubernetes'" class="name-url">
           <p>NAME_SPACE<span>*</span></p>
           <a-input v-model="clusterInfo.nameSpace"
@@ -132,6 +149,8 @@ export default {
         ingressName: '',
         nameSpace: '',
         serviceAccount: '',
+        hadoopConfDir: '',
+        yarnProxyUrl: '',
         paramsPairList: []
       },
       clusterTypeList: clusterTypeList,
@@ -167,8 +186,10 @@ export default {
         this.clusterInfo.nameSpace = clusterParams.nameSpace;
         this.clusterInfo.kubePath = clusterParams.kubePath;
         this.clusterInfo.serviceAccount = clusterParams.serviceAccount;
+        this.clusterInfo.hadoopConfDir = clusterParams.hadoopConfDir;
         this.clusterInfo.ingressHost = clusterParams.ingressHost;
         this.clusterInfo.ingressName = clusterParams.ingressName;
+        this.clusterInfo.yarnProxyUrl = clusterParams.yarnProxyUrl;
         const length = clusterParams.extraParam.length;
         if (length < 1) {
           return
@@ -260,7 +281,15 @@ export default {
           params.clusterParams = JSON.stringify(enginParams);
           break
         case "yarn":
-          // TODO
+          if(this.clusterInfo.hadoopConfDir.trim() === ''){
+            this.$message.warning("HADOOP_CONF_DIR is empty")
+            return
+          }
+          enginParams = {
+            "hadoopConfDir": this.clusterInfo.hadoopConfDir,
+            "yarnProxyUrl": this.clusterInfo.yarnProxyUrl
+          }
+          params.clusterParams = JSON.stringify(enginParams);
           break
       }
       let res = await this.$http.post('/system/clusterManagement/updateInfo', params)

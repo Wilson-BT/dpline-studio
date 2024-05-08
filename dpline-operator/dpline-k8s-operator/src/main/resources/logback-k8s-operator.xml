@@ -35,7 +35,7 @@
     <appender name="WATCHERLOGFILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${log.base}/dpline-watcher.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>${log.base}/dpline-watcher.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <fileNamePattern>${log.base}/dpline-k8s-watcher.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
             <maxHistory>30</maxHistory>
             <maxFileSize>200MB</maxFileSize>
         </rollingPolicy>

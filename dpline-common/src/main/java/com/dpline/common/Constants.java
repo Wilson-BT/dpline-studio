@@ -9,6 +9,16 @@ public final class Constants {
 
     public final static Long ZERO_FOR_LONG = 0L;
 
+    /**
+     * https prefix
+     */
+    public static final String HTTPS_SCHEMA = "https://";
+
+    /**
+     * http prefix
+     */
+    public static final String HTTP_SCHEMA = "http://";
+
     private Constants() {
         throw new UnsupportedOperationException("Construct Constants");
     }
@@ -76,6 +86,8 @@ public final class Constants {
     public static final char P = 'P';
     public static final char N = 'N';
     public static final String SUBTRACT_STRING = "-";
+
+    public static final String COLON = ":";
 
 
 

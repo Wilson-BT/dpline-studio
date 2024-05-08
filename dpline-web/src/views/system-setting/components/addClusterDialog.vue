@@ -34,7 +34,20 @@
                              :key="index">{{ item.label }}</a-select-option>
           </a-select>
         </a-form-item>
-
+        <a-form-item v-if="form.clusterType === 'yarn'" class="name-url">
+          <p>HADOOP_CONF_DIR<span>*</span></p>
+          <a-input v-model="form.hadoopConfDir"
+                   class="name"
+                   placeholder="请输入HADOOP_CONF_DIR">
+          </a-input>
+        </a-form-item>
+        <a-form-item v-if="form.clusterType === 'yarn'" class="name-url">
+          <p>YARN_PROXY_URL<span>*</span></p>
+          <a-input v-model="form.yarnProxyUrl"
+                   class="name"
+                   placeholder="请输入YARN_PROXY_URL">
+          </a-input>
+        </a-form-item>
         <a-form-item v-if="form.clusterType === 'kubernetes'" class="name-url">
           <p>NAME_SPACE<span>*</span></p>
           <a-input v-model="form.nameSpace"
@@ -127,6 +140,8 @@ export default {
           serviceAccount: '',
           ingressHost: '',
           ingressName: '',
+          hadoopConfDir: '',
+          yarnProxyUrl: '',
           paramsPairList: []
         },
         clusterTypeList: clusterTypeList,
@@ -224,7 +239,11 @@ export default {
             params.clusterParams = JSON.stringify(enginParams);
             break
           case "yarn":
-            // TODO
+            enginParams = {
+              "hadoopConfDir": this.form.hadoopConfDir,
+              "yarnProxyUrl": this.form.yarnProxyUrl
+            }
+            params.clusterParams = JSON.stringify(enginParams);
             break
         }
 

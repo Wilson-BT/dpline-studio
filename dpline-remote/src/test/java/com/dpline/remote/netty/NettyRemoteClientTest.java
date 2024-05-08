@@ -1,5 +1,6 @@
 package com.dpline.remote.netty;
 
+import com.dpline.common.enums.ClusterType;
 import com.dpline.remote.command.*;
 import com.dpline.remote.handle.NettyRequestProcessor;
 import com.dpline.remote.NettyRemoteClient;
@@ -37,13 +38,13 @@ public class NettyRemoteClientTest {
             }
         });
 
-        server.start();
+        server.start(ClusterType.KUBERNETES);
         //
         final NettyClientConfig clientConfig = new NettyClientConfig();
         NettyRemoteClient client = new NettyRemoteClient(clientConfig);
         Command commandPing = Ping.create();
         try {
-            Command response = client.sendSync(new Host("127.0.0.1", serverConfig.getListenPort()), commandPing, 2000);
+            Command response = client.sendSync(new Host("127.0.0.1", serverConfig.getListenPort(ClusterType.KUBERNETES)), commandPing, 2000);
             Assert.assertEquals(commandPing.getOpaque(), response.getOpaque());
         } catch (Exception e) {
             e.printStackTrace();
@@ -68,14 +69,14 @@ public class NettyRemoteClientTest {
             }
         });
 
-        server.start();
+        server.start(ClusterType.KUBERNETES);
         final NettyClientConfig clientConfig = new NettyClientConfig();
         NettyRemoteClient client = new NettyRemoteClient(clientConfig);
         CountDownLatch latch = new CountDownLatch(1);
         Command commandPing = Ping.create();
         try {
             final AtomicLong opaque = new AtomicLong(0);
-            client.sendAsync(new Host("127.0.0.1", serverConfig.getListenPort()), commandPing, 2000, new InvokeCallback() {
+            client.sendAsync(new Host("127.0.0.1", serverConfig.getListenPort(ClusterType.KUBERNETES)), commandPing, 2000, new InvokeCallback() {
                 @Override
                 public void operationComplete(ResponseFuture responseFuture) {
                     logger.info(responseFuture.getResponseCommand().toString());
@@ -107,14 +108,14 @@ public class NettyRemoteClientTest {
             }
         });
 
-        server.start();
+        server.start(ClusterType.KUBERNETES);
         final NettyClientConfig clientConfig = new NettyClientConfig();
         NettyRemoteClient client = new NettyRemoteClient(clientConfig);
         CountDownLatch latch = new CountDownLatch(1);
         Command commandPing = Ping.create();
         try {
             final AtomicLong opaque = new AtomicLong(0);
-            client.sendAsync(new Host("127.0.0.1", serverConfig.getListenPort()), commandPing, 2000, new InvokeCallback() {
+            client.sendAsync(new Host("127.0.0.1", serverConfig.getListenPort(ClusterType.KUBERNETES)), commandPing, 2000, new InvokeCallback() {
                 @Override
                 public void operationComplete(ResponseFuture responseFuture) {
                     logger.info(responseFuture.getResponseCommand().toString());

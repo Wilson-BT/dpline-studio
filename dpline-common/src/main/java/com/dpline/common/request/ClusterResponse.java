@@ -4,12 +4,12 @@ import com.dpline.common.enums.ResponseStatus;
 import lombok.Data;
 
 @Data
-public class K8sClusterResponse extends Response {
+public class ClusterResponse extends Response {
 
-    public K8sClusterResponse() {
+    public ClusterResponse() {
     }
 
-    public K8sClusterResponse(ResponseStatus responseStatus) {
+    public ClusterResponse(ResponseStatus responseStatus) {
         this.responseStatus = responseStatus;
     }
 

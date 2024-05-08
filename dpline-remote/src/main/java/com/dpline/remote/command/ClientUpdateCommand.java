@@ -5,7 +5,7 @@ import lombok.Data;
 import java.io.Serializable;
 
 @Data
-public class K8sClientUpdateCommand extends AbstractOperatorCommand implements Serializable {
+public class ClientUpdateCommand extends AbstractOperatorCommand implements Serializable {
 
     Long clusterEntityId;
 
@@ -13,15 +13,15 @@ public class K8sClientUpdateCommand extends AbstractOperatorCommand implements S
 
     String oldClusterParamsContent;
 
-    public K8sClientUpdateCommand(Long clusterEntityId,
+    public ClientUpdateCommand(Long clusterEntityId,
                                   String oldClusterParamsContent,
                                   String newClusterParamsContent) {
         this.clusterEntityId = clusterEntityId;
         this.oldClusterParamsContent = oldClusterParamsContent;
         this.newClusterParamsContent = newClusterParamsContent;
-        this.commandType=CommandType.K8S_CLIENT_UPDATE_REQUEST;
+        this.commandType=CommandType.CLIENT_UPDATE_REQUEST;
     }
 
-    public K8sClientUpdateCommand() {
+    public ClientUpdateCommand() {
     }
 }

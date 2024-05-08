@@ -1,9 +1,9 @@
 package com.dpline.k8s.operator;
 
-import com.dpline.common.minio.Minio;
+import com.dpline.common.enums.ClusterType;
+import com.dpline.common.store.Minio;
 import com.dpline.k8s.operator.process.*;
 import com.dpline.k8s.operator.watcher.TaskStatusManager;
-import com.dpline.k8s.operator.process.*;
 import com.dpline.remote.command.CommandType;
 import com.dpline.remote.config.NettyServerConfig;
 import com.dpline.remote.NettyRemoteServer;
@@ -96,14 +96,14 @@ public class OperatorServer implements Closeable {
         server.registerProcessor(CommandType.TASK_STOP_REQUEST, taskStopProcessor);
         server.registerProcessor(CommandType.TASK_ALERT_EDIT_REQUEST, taskAlertEditProcessor);
         // 集群添加
-        server.registerProcessor(CommandType.K8S_CLIENT_ADD_REQUEST, k8sClientAddProcessor);
+        server.registerProcessor(CommandType.CLIENT_ADD_REQUEST, k8sClientAddProcessor);
         // 集群移除
-        server.registerProcessor(CommandType.K8S_CLIENT_REMOVE_REQUEST, k8sClientRemoveProcessor);
+        server.registerProcessor(CommandType.CLIENT_REMOVE_REQUEST, k8sClientRemoveProcessor);
         // 集群更新
-        server.registerProcessor(CommandType.K8S_CLIENT_UPDATE_REQUEST,k8sClientUpdateProcessor);
+        server.registerProcessor(CommandType.CLIENT_UPDATE_REQUEST,k8sClientUpdateProcessor);
         server.registerProcessor(CommandType.FILE_DAG_REQUEST, fileDagProcessor);
         server.registerProcessor(CommandType.TASK_TRIGGER_REQUEST,taskTriggerProcessor);
-        server.start();
+        server.start(ClusterType.KUBERNETES);
         logger.info("NettyServer is open.");
         minio.createMinioClient();
         logger.info("Minio client is open.");

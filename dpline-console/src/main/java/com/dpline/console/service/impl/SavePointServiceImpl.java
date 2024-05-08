@@ -4,7 +4,7 @@ import com.dpline.common.enums.RunModeType;
 import com.dpline.common.enums.Status;
 import com.dpline.common.util.*;
 import com.dpline.console.service.GenericService;
-import com.dpline.common.minio.Minio;
+import com.dpline.common.store.Minio;
 import com.dpline.dao.entity.Job;
 import com.dpline.dao.entity.JobSavepoint;
 import com.dpline.dao.mapper.JobSavepointMapper;

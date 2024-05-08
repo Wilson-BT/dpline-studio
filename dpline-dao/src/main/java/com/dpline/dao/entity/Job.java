@@ -3,8 +3,8 @@ package com.dpline.dao.entity;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.dpline.dao.generic.GenericModel;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
-import org.codehaus.jackson.annotate.JsonIgnore;
 
 import java.util.List;
 
