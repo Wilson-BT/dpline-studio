@@ -4,19 +4,19 @@ import com.dpline.common.util.*;
 import com.dpline.console.service.impl.DplineJobOperateLogImpl;
 import com.dpline.console.socket.FileDataListener;
 import com.dpline.console.socket.JobLogTailTask;
-import com.dpline.console.socket.WebSocketEndpoint;
+import com.dpline.console.socket.WsSessionManager;
 import com.dpline.console.util.SpringContextUtil;
 import com.dpline.dao.entity.DplineJobOperateLog;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.socket.WebSocketSession;
+
 import java.io.File;
 import java.util.concurrent.*;
 
 public class LogSocketHandler implements WebSocketHandler {
 
-    private Long logId;
-
-    private String logPath;
+    Long logId;
 
     private JobLogTailTask jobLogTailTask;
 
@@ -33,20 +33,20 @@ public class LogSocketHandler implements WebSocketHandler {
 
     private Logger logger = LoggerFactory.getLogger(LogSocketHandler.class);
 
-    @Override
-    public void init(Long logId){
+    public LogSocketHandler(Long logId){
         this.logId = logId;
-        DplineJobOperateLogImpl dplineJobOperateLogImpl = SpringContextUtil.getBean(DplineJobOperateLogImpl.class);
-        DplineJobOperateLog dplineJobOperateLog = dplineJobOperateLogImpl.getMapper().selectById(logId);
-        this.logPath = dplineJobOperateLog.getOperateLogPath();
     }
+
 
     /**
      * 读取部署日志
      */
     @Override
-    public void trigger(WebSocketEndpoint webSocketEndpoint) {
-        FileDataListener fileDataListener = new FileDataListener(webSocketEndpoint);
+    public void trigger() {
+        DplineJobOperateLogImpl dplineJobOperateLogImpl = SpringContextUtil.getBean(DplineJobOperateLogImpl.class);
+        DplineJobOperateLog dplineJobOperateLog = dplineJobOperateLogImpl.getMapper().selectById(logId);
+        FileDataListener fileDataListener = new FileDataListener(WsSessionManager.get(this.logId));
+        String logPath = dplineJobOperateLog.getOperateLogPath();
         if(StringUtils.isEmpty(logPath)){
             return;
         }
@@ -74,27 +74,6 @@ public class LogSocketHandler implements WebSocketHandler {
         if(Asserts.isNotNull(jobLogTailTask)){
             jobLogTailTask.stop();
         }
-        this.logId = null;
-        this.logPath = null;
     }
 
-//    static class LogThreadPool {
-
-//        static class LogTailThreadFactory implements ThreadFactory {
-//
-//            private final String namePrefix;
-//
-//            public LogTailThreadFactory(String namePrefix) {
-//                this.namePrefix = namePrefix;
-//            }
-//
-//            @Override
-//            public Thread newThread(@NotNull Runnable runnable) {
-//                Thread thread = new Thread(runnable);
-//                thread.setDaemon(true);
-//                thread.setName(namePrefix + "-" + thread.getId());
-//                return thread;
-//            }
-//        }
-//    }
 }

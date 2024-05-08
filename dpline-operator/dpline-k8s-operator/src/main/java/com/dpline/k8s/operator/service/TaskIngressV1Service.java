@@ -213,13 +213,13 @@ public class TaskIngressV1Service extends BaseService implements IngressService 
         // 如果剩余任务为空，直接删除ingress
         if(CollectionUtils.isEmpty(ingressCustomConfig.getHttpIngressPathList())){
             logger.info("[V1] Task is empty, prepare to delete the whole ingress.");
-            List<StatusDetails> statusDetails = k8sClient.network()
-                .v1()
-                .ingresses()
-                .inNamespace(nameSpace)
-                .withName(ingressCustomConfig.getIngressName())
-                .delete();
-            logger.info("[V1] Whole delete result: {}", statusDetails.toString());
+            Boolean delete = k8sClient.network()
+                    .v1()
+                    .ingresses()
+                    .inNamespace(nameSpace)
+                    .withName(ingressCustomConfig.getIngressName())
+                    .delete();
+            logger.info("[V1] Whole delete result: {}", delete.toString());
             return;
         }
         // 剩余任务不为空，直接替换

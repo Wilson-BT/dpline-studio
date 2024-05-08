@@ -1,7 +1,7 @@
 package com.dpline.console;
 
 import com.dpline.console.handler.LogSocketHandler;
-import com.dpline.console.socket.WebSocketEndpoint;
+import com.dpline.console.socket.WebSocketEndpointHandler;
 import com.dpline.dao.entity.Job;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,7 +21,7 @@ import java.util.TimerTask;
 public class JobLogTest {
 
     @Autowired
-    WebSocketEndpoint webSocketEndpoint;
+    WebSocketEndpointHandler webSocketEndpointHandler;
 
     private static final Logger logger = LoggerFactory.getLogger(JobLogTest.class);
 
@@ -66,7 +66,7 @@ public class JobLogTest {
         Job job = new Job();
         job.setId(10668357750176L);
         job.setProjectId(9640278031136L);
-        LogSocketHandler deployLogSocketHandler = new LogSocketHandler();
+        LogSocketHandler deployLogSocketHandler = new LogSocketHandler(10668357750176L);
 //        webSocketEndpoint.onOpen();
     }
 

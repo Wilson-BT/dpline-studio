@@ -76,9 +76,9 @@ public class TaskIngressOperateProxy  implements IngressService{
         // https://kubernetes.io/docs/reference/using-api/deprecation-guide/
         // https://kubernetes.io/blog/2021/07/14/upcoming-changes-in-kubernetes-1-22/
         String serverVersion =
-            client.getKubernetesVersion().getMajor()
+            client.getVersion().getMajor()
                 + "."
-                + client.getKubernetesVersion().getMinor();
+                + client.getVersion().getMinor();
         String targetVersion = "1.19";
         try {
             return Version.parse(serverVersion)

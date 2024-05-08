@@ -4,6 +4,8 @@ import lombok.SneakyThrows;
 import org.apache.commons.io.input.TailerListenerAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.socket.TextMessage;
+import org.springframework.web.socket.WebSocketSession;
 
 import java.io.IOException;
 
@@ -16,20 +18,19 @@ public class FileDataListener extends TailerListenerAdapter {
     public static final String EOF_FLAG = "READ EOF";
     public volatile boolean readEnd = false;
 
-
     private static Logger logger = LoggerFactory.getLogger(FileDataListener.class);
 
-    private WebSocketEndpoint webSocketEndpoint;
+    private WebSocketSession webSocketSession;
 
-    public FileDataListener(WebSocketEndpoint webSocketEndpoint) {
-        this.webSocketEndpoint=webSocketEndpoint;
+    public FileDataListener(WebSocketSession webSocketSession) {
+        this.webSocketSession=webSocketSession;
     }
 
     @Override
     public void fileNotFound() {  //文件没有找到
         logger.error("文件没有找到");
         try {
-            webSocketEndpoint.sendMessage("文件没有找到。。。");
+            webSocketSession.sendMessage(new TextMessage("文件没有找到..."));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -39,7 +40,7 @@ public class FileDataListener extends TailerListenerAdapter {
     public void fileRotated() {  //文件被外部的输入流改变
         logger.error("文件rotated");
         try {
-            webSocketEndpoint.sendMessage("文件被修改。。。");
+            webSocketSession.sendMessage(new TextMessage("文件被修改..."));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -53,9 +54,9 @@ public class FileDataListener extends TailerListenerAdapter {
         }
 //        logger.info("文件 line:"+line);
         try {
-            webSocketEndpoint.sendMessage(line);
+            webSocketSession.sendMessage(new TextMessage(line));
             if (line.contains(DEPLOY_FAILED_FLAG) || line.contains(DEPLOY_SUCCESS_FLAG) || line.contains(EOF_FLAG)) {
-                webSocketEndpoint.sendMessage(EOF_FLAG);
+                webSocketSession.sendMessage(new TextMessage(EOF_FLAG));
                 logger.info("日志读取结束，准备退出读取");
                 readEnd = true;
             }

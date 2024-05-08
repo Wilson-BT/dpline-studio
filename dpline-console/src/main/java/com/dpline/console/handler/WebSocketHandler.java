@@ -1,16 +1,13 @@
 package com.dpline.console.handler;
 
-import com.dpline.console.socket.WebSocketEndpoint;
+import org.springframework.web.socket.WebSocketSession;
 
 public interface WebSocketHandler {
 
-    void init(Long id);
-
     /**
      * 触发行为
-     * @param  webSocketEndpoint
      */
-    void trigger(WebSocketEndpoint webSocketEndpoint);
+    void trigger();
 
     /**
      * 关闭行为
