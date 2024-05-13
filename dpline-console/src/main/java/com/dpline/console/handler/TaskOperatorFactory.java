@@ -1,9 +1,9 @@
 package com.dpline.console.handler;
 
-import com.dpline.common.enums.FileType;
 import com.dpline.common.enums.RunModeType;
-import com.dpline.common.store.Minio;
+import com.dpline.common.store.FsStore;
 import com.dpline.console.service.impl.JarFileServiceImpl;
+import com.dpline.dao.domain.AbstractDeployConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -17,27 +17,57 @@ import java.util.Map;
 public class TaskOperatorFactory {
 
     @Autowired
-    Minio minio;
+    FsStore fsStore;
 
     @Autowired
     JarFileServiceImpl jarFileServiceImpl;
 
-    private static Map<RunModeType,DeployExecutor> deployExecutorMap = new HashMap<>();
+//    private static Map<RunModeType, DeployHandler> deployExecutorMap = new HashMap<>();
+
+    private static Map<RunModeType,NewDeployHandler> deployHandlerMap = new HashMap<>();
 
 
-    public DeployExecutor getDeployExecutor(FileType taskType, RunModeType runModeType){
-        // 如果 map.get(runModeType)
-        if(deployExecutorMap.containsKey(runModeType)){
-            return deployExecutorMap.get(runModeType);
+//    public DeployHandler getDeployExecutor(FileType taskType, RunModeType runModeType){
+//        if(deployExecutorMap.containsKey(runModeType)){
+//            return deployExecutorMap.get(runModeType);
+//        }
+//        switch (runModeType){
+//            case K8S_SESSION:
+//                return new SessionDeployHandler();
+//            case K8S_APPLICATION:
+//            case YARN_APPLICATION:
+//                return deployExecutorMap.computeIfAbsent(runModeType,
+//                        (key) -> {
+//                            return new ApplicationDeployHandler(fsStore, jarFileServiceImpl);
+//                        });
+//            case YARN_SESSION:
+//
+//            default:
+//                return null;
+//        }
+//    }
+
+    public NewDeployHandler getDeployHandler(RunModeType runModeType, AbstractDeployConfig deployConfig){
+        if(deployHandlerMap.containsKey(runModeType)){
+            return deployHandlerMap.get(runModeType);
         }
         switch (runModeType){
             case K8S_APPLICATION:
-                return deployExecutorMap.computeIfAbsent(runModeType,
-                    (key) -> {
-                        return new JobDeployExecutor(minio, jarFileServiceImpl);
-                });
-            case K8S_SESSION:
-                return new SessionDeployHandler();
+            case YARN_APPLICATION:
+                return deployHandlerMap.computeIfAbsent(runModeType,
+                        (key) -> {
+                            return new NewApplicationDeployHandler(fsStore,deployConfig);
+                        });
+            default:
+                return null;
+        }
+    }
+
+    public DeployConfigConverter getDeployConfigConverter(RunModeType runModeType){
+        switch (runModeType){
+            case K8S_APPLICATION:
+            case YARN_APPLICATION:
+                return new FlinkDeployConfigConverter();
             default:
                 return null;
         }

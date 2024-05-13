@@ -40,7 +40,7 @@ const dataSource = {
             password: "",
             certifyType: "default",
             hbaseZnode: "",
-            hadoopConfDir: "",
+            hadoopHome: "",
             clusterName: "",
             enabledDatahub: 0,
             authKafkaClusterAddr: "",

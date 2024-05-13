@@ -38,7 +38,7 @@ public class TaskPathResolver {
 
     private final static String RUN_JAR_PREFIX = "local:///opt/flink/main/%s";
 
-    public static final String SAVEPOINT_DIR_FORMAT = "%s%s/%s";
+    public static final String SAVEPOINT_DIR_FORMAT = "%s/%s";
 
 
     public static final String DATA_BASEDIR = pathDelimiterResolve(CommonProperties.getDataBasedirPath());
@@ -113,11 +113,11 @@ public class TaskPathResolver {
      * @return
      */
     public static String getTaskRemoteDeployDir(long projectId, long jobId) {
-        return String.format("task/%s/%s", projectId, jobId);
+        return String.format("/task/%s/%s", projectId, jobId);
     }
 
     public static String getTaskRemoteHaDir(String jobName){
-        return String.format("ha/%s",jobName);
+        return String.format("/ha/%s",jobName);
     }
 
     public static String getJobDefaultCheckPointDir(long projectId, long jobId, String runJobId) {
@@ -125,11 +125,11 @@ public class TaskPathResolver {
     }
 
     public static String getJobDefaultCheckPointDir(long projectId, long jobId) {
-        return String.format("checkpoint/%s/%s", projectId, jobId);
+        return String.format("/checkpoint/%s/%s", projectId, jobId);
     }
 
     public static String getJobDefaultSavePointDir(long projectId, long jobId,String runJobId) {
-        return String.format("savepoint/%s/%s/%s", projectId, jobId, runJobId);
+        return String.format("/savepoint/%s/%s/%s", projectId, jobId, runJobId);
     }
 
 

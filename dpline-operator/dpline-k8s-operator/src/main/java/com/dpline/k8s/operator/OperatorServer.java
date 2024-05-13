@@ -1,7 +1,6 @@
 package com.dpline.k8s.operator;
 
 import com.dpline.common.enums.ClusterType;
-import com.dpline.common.store.Minio;
 import com.dpline.k8s.operator.process.*;
 import com.dpline.k8s.operator.watcher.TaskStatusManager;
 import com.dpline.remote.command.CommandType;
@@ -57,8 +56,6 @@ public class OperatorServer implements Closeable {
     @Autowired
     K8sClientUpdateProcessor k8sClientUpdateProcessor;
 
-    @Autowired
-    Minio minio;
 
     NettyRemoteServer server;
 
@@ -105,8 +102,6 @@ public class OperatorServer implements Closeable {
         server.registerProcessor(CommandType.TASK_TRIGGER_REQUEST,taskTriggerProcessor);
         server.start(ClusterType.KUBERNETES);
         logger.info("NettyServer is open.");
-        minio.createMinioClient();
-        logger.info("Minio client is open.");
     }
 
     @PreDestroy

@@ -167,7 +167,7 @@
             hadoop配置目录
           </div>
           <div class="form-item-value">
-            <a-input v-model="formData.hadoopConfDir"
+            <a-input v-model="formData.hadoopHome"
                      disabled
                      placeholder="">
             </a-input>
@@ -392,7 +392,7 @@
           password: '',
           certifyType: 'default',
           hbaseZnode: '',
-          hadoopConfDir: '',
+          hadoopHome: '',
           hiveCluster: '',
           clusterName: '',
           enabledDatahub: 0,
@@ -598,18 +598,18 @@
       handlerChangeHudiCluster (value) {
         const findItem = this.hudiClusterList.find(item => item.hiveCluster === value)
         this.formData.dataSourceUrl = findItem.dataSourceUrl
-        this.formData.hadoopConfDir = findItem.hadoopConfDir
+        this.formData.hadoopHome = findItem.hadoopHome
       },
       setHiveConf () {
         if (this.clusterList && this.clusterList.length) {
           if (this.type === 'add') {
             this.formData.dataSourceUrl = this.clusterList[0].dataSourceUrl
-            this.formData.hadoopConfDir = this.clusterList[0].hadoopConfDir
+            this.formData.hadoopHome = this.clusterList[0].hadoopHome
             this.formData.hiveCluster = this.clusterList[0].hiveCluster
           } else if (this.type === 'edit') {
             if (!this.formData.hiveCluster) {
               this.formData.dataSourceUrl = this.clusterList[0].dataSourceUrl
-              this.formData.hadoopConfDir = this.clusterList[0].hadoopConfDir
+              this.formData.hadoopHome = this.clusterList[0].hadoopHome
               this.formData.hiveCluster = this.clusterList[0].hiveCluster
             }
 
@@ -621,12 +621,12 @@
         if (this.hudiClusterList && this.hudiClusterList.length) {
           if (this.type === 'add') {
             this.formData.dataSourceUrl = this.hudiClusterList[0].dataSourceUrl
-            this.formData.hadoopConfDir = this.hudiClusterList[0].hadoopConfDir
+            this.formData.hadoopHome = this.hudiClusterList[0].hadoopHome
             this.formData.hiveCluster = this.hudiClusterList[0].hiveCluster
           } else if (this.type === 'edit') {
             if (!this.formData.hiveCluster) {
               this.formData.dataSourceUrl = this.hudiClusterList[0].dataSourceUrl
-              this.formData.hadoopConfDir = this.hudiClusterList[0].hadoopConfDir
+              this.formData.hadoopHome = this.hudiClusterList[0].hadoopHome
               this.formData.hiveCluster = this.hudiClusterList[0].hiveCluster
             }
 

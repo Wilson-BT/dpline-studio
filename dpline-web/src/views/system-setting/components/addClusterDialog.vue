@@ -35,14 +35,14 @@
           </a-select>
         </a-form-item>
         <a-form-item v-if="form.clusterType === 'yarn'" class="name-url">
-          <p>HADOOP_CONF_DIR<span>*</span></p>
-          <a-input v-model="form.hadoopConfDir"
+          <p>HADOOP_HOME<span>*</span></p>
+          <a-input v-model="form.hadoopHome"
                    class="name"
-                   placeholder="请输入HADOOP_CONF_DIR">
+                   placeholder="请输入HADOOP_HOME">
           </a-input>
         </a-form-item>
         <a-form-item v-if="form.clusterType === 'yarn'" class="name-url">
-          <p>YARN_PROXY_URL<span>*</span></p>
+          <p>YARN_PROXY_URL</p>
           <a-input v-model="form.yarnProxyUrl"
                    class="name"
                    placeholder="请输入YARN_PROXY_URL">
@@ -140,7 +140,7 @@ export default {
           serviceAccount: '',
           ingressHost: '',
           ingressName: '',
-          hadoopConfDir: '',
+          hadoopHome: '',
           yarnProxyUrl: '',
           paramsPairList: []
         },
@@ -211,6 +211,9 @@ export default {
         if (this.form.clusterType === '' || this.form.clusterType.length === 0) {
           return this.$message.warning({ content: '未选择运行环境类型', duration: 2 })
         }
+        if(this.form.hadoopHome.trim() === '' || this.form.hadoopHome === null){
+          return this.$message.warning({ content: 'HADOOP_HOME不能为空', duration: 2 })
+        }
         let params = {
           clusterName: this.form.clusterName,
           clusterType: this.form.clusterType,
@@ -225,7 +228,7 @@ export default {
               "serviceAccount": this.form.serviceAccount,
               "ingressHost": this.form.ingressHost,
               "ingressName": this.form.ingressName,
-              "extraParam":[]
+              "extraParam": []
             }
             // 如果补充参数不为空
             if (this.form.paramsPairList.length > 0) {
@@ -240,7 +243,7 @@ export default {
             break
           case "yarn":
             enginParams = {
-              "hadoopConfDir": this.form.hadoopConfDir,
+              "hadoopHome": this.form.hadoopHome,
               "yarnProxyUrl": this.form.yarnProxyUrl
             }
             params.clusterParams = JSON.stringify(enginParams);

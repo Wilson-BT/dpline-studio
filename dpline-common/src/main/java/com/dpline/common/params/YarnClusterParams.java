@@ -12,7 +12,7 @@ public class YarnClusterParams  implements ClusterParams{
     /**
      * config path
      */
-    private String hadoopConfDir;
+    private String hadoopHome;
 
     /**
      *  yarn proxy url

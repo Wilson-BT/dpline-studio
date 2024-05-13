@@ -2,6 +2,7 @@ package com.dpline.common.util;
 
 import com.dpline.common.enums.ResFsType;
 import com.dpline.common.enums.Status;
+import com.dpline.common.store.FsStore;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +28,9 @@ public class FlinkUtils {
 
     public static Optional<String> getRealVersionFromHomePath(String flinkPath) {
         String flinkPathName = flinkPath.substring(flinkPath.lastIndexOf("/") + 1);
+        if(FsStore.WINDOWS){
+            flinkPathName =  flinkPath.substring(flinkPath.lastIndexOf("\\") + 1);
+        }
         String version = strLine2Version(flinkHomeNamePattern, flinkPathName);
         return Optional.of(version);
     }

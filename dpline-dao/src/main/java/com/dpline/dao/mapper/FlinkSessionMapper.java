@@ -16,8 +16,8 @@ public interface FlinkSessionMapper extends BaseMapper<FlinkSession> {
     List<FlinkSession> queryByk8sNameSpaceId(@Param("k8sNameSpaceId") long k8sNameSpaceId);
 
 
-    Boolean existSameKubernetesClusterId(@Param("k8sNamespaceId") long k8sNamespaceId,
-                                         @Param("kubernetesClusterId") String kubernetesClusterId);
+//    Boolean existSameKubernetesClusterId(@Param("k8sNamespaceId") long k8sNamespaceId,
+//                                         @Param("clusterId") String kubernetesClusterId);
 
     Boolean existSameFlinkSessionName(
             @Param("userId") int userId,

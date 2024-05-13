@@ -2,20 +2,14 @@ package com.dpline.console.handler;
 
 import com.dpline.dao.dto.JobDto;
 import com.dpline.dao.entity.Job;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.dpline.common.util.HttpUtils;
-import com.dpline.common.util.JSONUtils;
-import com.dpline.common.util.TaskPathResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.IOException;
-import java.net.URI;
 import java.net.URISyntaxException;
 
-public class SessionDeployHandler implements DeployExecutor {
+@Deprecated
+public class SessionDeployHandler implements DeployHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(SessionDeployHandler.class);
 

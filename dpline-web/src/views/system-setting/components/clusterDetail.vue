@@ -37,15 +37,15 @@
         </a-form-item>
 
         <a-form-item v-if="clusterInfo.clusterType === 'yarn'" class="name-url">
-          <p>HADOOP_CONF_DIR<span>*</span></p>
-          <a-input v-model="clusterInfo.hadoopConfDir"
+          <p>HADOOP_HOME<span>*</span></p>
+          <a-input v-model="clusterInfo.hadoopHome"
                    class="name"
-                   placeholder="请输入HADOOP_CONF_DIR">
+                   placeholder="请输入HADOOP_HOME">
           </a-input>
         </a-form-item>
 
         <a-form-item v-if="clusterInfo.clusterType === 'yarn'" class="name-url">
-          <p>YARN_PROXY_URL<span>*</span></p>
+          <p>YARN_PROXY_URL</p>
           <a-input v-model="clusterInfo.yarnProxyUrl"
                    class="name"
                    placeholder="请输入YARN_PROXY_URL">
@@ -149,7 +149,7 @@ export default {
         ingressName: '',
         nameSpace: '',
         serviceAccount: '',
-        hadoopConfDir: '',
+        hadoopHome: '',
         yarnProxyUrl: '',
         paramsPairList: []
       },
@@ -186,7 +186,7 @@ export default {
         this.clusterInfo.nameSpace = clusterParams.nameSpace;
         this.clusterInfo.kubePath = clusterParams.kubePath;
         this.clusterInfo.serviceAccount = clusterParams.serviceAccount;
-        this.clusterInfo.hadoopConfDir = clusterParams.hadoopConfDir;
+        this.clusterInfo.hadoopHome = clusterParams.hadoopHome;
         this.clusterInfo.ingressHost = clusterParams.ingressHost;
         this.clusterInfo.ingressName = clusterParams.ingressName;
         this.clusterInfo.yarnProxyUrl = clusterParams.yarnProxyUrl;
@@ -281,13 +281,13 @@ export default {
           params.clusterParams = JSON.stringify(enginParams);
           break
         case "yarn":
-          if(this.clusterInfo.hadoopConfDir.trim() === ''){
-            this.$message.warning("HADOOP_CONF_DIR is empty")
-            return
-          }
           enginParams = {
-            "hadoopConfDir": this.clusterInfo.hadoopConfDir,
+            "hadoopHome": this.clusterInfo.hadoopHome,
             "yarnProxyUrl": this.clusterInfo.yarnProxyUrl
+          }
+          if(this.clusterInfo.hadoopHome.trim() === ''){
+            this.$message.warning("HADOOP_HOME is empty")
+            return
           }
           params.clusterParams = JSON.stringify(enginParams);
           break

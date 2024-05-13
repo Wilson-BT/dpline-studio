@@ -1,15 +1,11 @@
 package com.dpline.common.util;
 
-import com.dpline.common.enums.ResFsType;
-import com.dpline.common.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Locale;
-import java.util.Optional;
-import java.util.Properties;
+import java.util.*;
 
 import static com.dpline.common.Constants.COMMON_PROPERTIES_PATH;
 
@@ -108,6 +104,30 @@ public class PropertyUtils {
 
     public static String getPathFromEnv(String envKey) {
         return Optional.ofNullable(System.getenv(envKey)).orElse(System.getProperty(envKey));
+    }
+
+    public static Boolean getBoolean(String key, Boolean defaultValue) {
+        String value = getProperty(key);
+        if (value == null) {
+            return defaultValue;
+        }
+
+        try {
+            return Boolean.parseBoolean(value);
+        } catch (NumberFormatException e) {
+            logger.info(e.getMessage(), e);
+        }
+        return defaultValue;
+    }
+
+    public static Map<String, String> getPrefixedProperties(String prefix) {
+        Map<String, String> matchedProperties = new HashMap<>();
+        for (String propName : properties.stringPropertyNames()) {
+            if (propName.startsWith(prefix)) {
+                matchedProperties.put(propName, properties.getProperty(propName));
+            }
+        }
+        return matchedProperties;
     }
 
 }

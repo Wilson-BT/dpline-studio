@@ -4,6 +4,7 @@ import com.dpline.common.enums.ResponseStatus;
 import com.dpline.common.params.YarnClusterParams;
 import com.dpline.common.request.ClusterResponse;
 import com.dpline.common.util.Asserts;
+import com.dpline.common.util.ExceptionUtil;
 import com.dpline.common.util.JSONUtils;
 import com.dpline.dao.mapper.ClusterMapper;
 import com.dpline.remote.command.ClientAddCommand;
@@ -50,12 +51,17 @@ public class YarnClientAddProcessor implements NettyRequestProcessor {
             return;
         }
         try {
-            hadoopManager.createHadoop(clientAddCommand.getClusterEntityId().toString(),clusterParams.getHadoopConfDir());
+            hadoopManager.createHadoop(clientAddCommand.getClusterEntityId().toString(),clusterParams.getHadoopHome());
             channel.writeAndFlush(
                     new ClientAddResponseCommand(new ClusterResponse(ResponseStatus.SUCCESS))
                             .convert2Command(command.getOpaque()));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        } catch (Exception e) {
+            logger.error("Create new Cluster {} error", ExceptionUtil.exceptionToString(e));
+            ClusterResponse clusterResponse = new ClusterResponse(ResponseStatus.FAIL);
+            clusterResponse.setMsg("Create cluster Error.");
+            channel.writeAndFlush(new ClientAddResponseCommand()
+                    .convert2Command(command.getOpaque())
+            );
         }
     }
 }

@@ -7,12 +7,12 @@ import com.dpline.common.enums.ResponseStatus;
 import com.dpline.common.request.FlinkDagRequest;
 import com.dpline.common.request.FlinkDagResponse;
 import com.dpline.common.request.JarResource;
+import com.dpline.common.store.FsStore;
+import com.dpline.common.store.HdfsStore;
 import com.dpline.common.util.*;
-import com.dpline.common.store.Minio;
 import com.dpline.flink.api.TaskOperateProxy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
@@ -21,8 +21,10 @@ import java.net.MalformedURLException;
 @Service
 public class FileDagService {
 
-    @Autowired
-    Minio minio;
+    private FsStore fsStore;
+    public FileDagService(){
+        fsStore = new HdfsStore();
+    }
 
     private static Logger logger = LoggerFactory.getLogger(FileDagService.class);
 
@@ -75,7 +77,7 @@ public class FileDagService {
      */
     private void downLoadJar(JarResource jarResource) throws Exception {
         FileUtils.createDir(jarResource.getLocalParentPath(), ResFsType.LOCAL);
-        minio.downloadFile(jarResource.getRemotePath(), jarResource.getJarLocalPath());
+        fsStore.download(jarResource.getRemotePath(), jarResource.getJarLocalPath(),false);
         logger.info("Jar => [{}] has been download.", jarResource.getJarLocalPath());
     }
 }

@@ -14,6 +14,4 @@ public class JobDto extends Job {
 
     @Ignore
     private Cluster cluster;
-
-
 }

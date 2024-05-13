@@ -71,10 +71,12 @@ public enum Status {
 
     DELETE_SAVEPOINT_ERROR(1605,"delete savepoint error","删除savepoint失败"),
 
+    // ===================== cluster ==================
     CLUSTER_ADD_LIST_NULL(2001,"cluster add list is null","添加列表为空"),
     USER_RELATION_ALL_SAVED(2002,"user relation all saved","用户集群关系已经存在"),
     CLUSTER_SAME_NAME_EXIST(2003,"cluster same name exist","集群相同的名称已经存在"),
     CLUSTER_CREATE_ERROR(2004,"cluster create error","集群创建失败"),
+
     SAME_CLUSTER_EXIST(2005,"same cluster exist","相同的集群已经存在"),
     CLUSTER_BOUNDED_JOB_EXIST(2006,"cluster bounded job [{0}] exist","集群绑定的Job [{0}] 存在,不能删除"),
     CLUSTER_BOUNDED_USER_EXIST(2007,"cluster bounded user [{0}] exist","集群绑定的用户 [{0}] 存在,不能删除"),
@@ -83,7 +85,9 @@ public enum Status {
 
     CLUSTER_UPDATE_ERROR(2009,"cluster update error","集群更新失败"),
 
-    CLUSTER_PARAMS_IS_EMPTY(2010,"cluster params [{0}] empty error","集群参数为空异常"),
+    CLUSTER_PARAMS_IS_EMPTY(2010,"cluster params empty error","集群参数为空异常"),
+
+    CLUSTER_OPERATOR_ERROR(2011,"cluster operate error","集群操作失败"),
 
     FLINK_REAL_VERSION_NOT_EXISTS(3001,"flink real version not exists","Flink真正版本不存在"),
     FLINK_TASK_SUBMITTING_WAIT_ERROR(3002,"flink task is submitting now","任务正在提交中，请等待10S后重试"),

@@ -1,8 +1,5 @@
-package com.dpline.yarn.operator.util;
+package com.dpline.common.util;
 
-import com.dpline.common.util.FileUtils;
-import com.dpline.common.util.PropertyUtils;
-import com.dpline.common.util.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocalFileSystem;
@@ -16,6 +13,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 public class HadoopUtil {
 
@@ -47,6 +45,13 @@ public class HadoopUtil {
             return FileUtils.resolvePath(PropertyUtils.getPathFromEnv(HADOOP_HOME),CONF_SUFFIX);
         }
         return hadoopConfDir;
+    }
+
+    public static Optional<String> getHadoopConfDir(String homeDir) throws PropertyException {
+        if(StringUtils.isEmpty(homeDir)){
+            return Optional.empty();
+        }
+        return Optional.of(FileUtils.resolvePath(homeDir,CONF_SUFFIX));
     }
 
     /**

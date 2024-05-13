@@ -10,12 +10,12 @@
     <select id="queryByk8sNameSpaceId" resultType="com.dpline.dao.entity.FlinkSession">
         select <include refid="baseSql"/> from dpline_flink_session where k8s_namespace_id=#{k8sNameSpaceId}
     </select>
-    <select id="existSameKubernetesClusterId" resultType="java.lang.Boolean">
-        select 1 from
-        dpline_flink_session
-        where cluster_id=#{kubernetesClusterId}
-        limit 1
-    </select>
+<!--    <select id="existSameKubernetesClusterId" resultType="java.lang.Boolean">-->
+<!--        select 1 from-->
+<!--        dpline_flink_session-->
+<!--        where cluster_id=#{clusterId}-->
+<!--        limit 1-->
+<!--    </select>-->
     <select id="existSameFlinkSessionName" resultType="java.lang.Boolean">
         select 1 from
             dpline_flink_session

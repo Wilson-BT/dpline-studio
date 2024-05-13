@@ -56,30 +56,39 @@ public class ClusterServiceImpl extends GenericService<Cluster, Long> implements
             putMsg(result, Status.USER_NO_OPERATION_PERM);
             return result;
         }
-        // 如果已经存在相同名字，则退出
+        // not same name
         if (existSameName(cluster.getClusterName())) {
             putMsg(result, Status.CLUSTER_SAME_NAME_EXIST);
             return result;
         }
-
+        // not same cluster params
         if (existSameClusterParams(cluster.getClusterParams())) {
             putMsg(result, Status.SAME_CLUSTER_EXIST);
             return result;
         }
-        try {
-            cluster.setId(CodeGenerateUtils.getInstance().genCode());
-            ClientAddCommand clientAddCommand = new ClientAddCommand(cluster.getId(),cluster.getClusterParams());
-            // add new client to operator
-            ClientAddResponseCommand clientAddResponseCommand =
-                    (ClientAddResponseCommand) nettyClientService.sendCommand(
-                                        ClusterType.of(cluster.getClusterType()),
-                                        clientAddCommand,
-                                        ClientAddResponseCommand.class);
-            if (Asserts.isNull(clientAddResponseCommand)
-                    || clientAddResponseCommand.getClusterResponse().getResponseStatus().equals(ResponseStatus.FAIL)) {
-                putMsg(result, Status.CLUSTER_CREATE_ERROR);
+        ClusterType clusterType = ClusterType.of(cluster.getClusterType());
+        if (ClusterType.YARN.equals(clusterType)){
+            YarnClusterParams yarnClusterParams = JSONUtils.parseObject(cluster.getClusterParams(), YarnClusterParams.class);
+            if(Asserts.isNull(yarnClusterParams) || !FileUtils.checkDirExist(yarnClusterParams.getHadoopHome())){
+                putMsg(result, Status.CLUSTER_PARAMS_IS_EMPTY);
                 return result;
             }
+        }
+        try {
+        // if create cluster success
+            cluster.setId(CodeGenerateUtils.getInstance().genCode());
+//            ClientAddCommand clientAddCommand = new ClientAddCommand(cluster.getId(),cluster.getClusterParams());
+//            // add new client to operator
+//            ClientAddResponseCommand clientAddResponseCommand =
+//                    (ClientAddResponseCommand) nettyClientService.sendCommand(
+//                                        clusterType,
+//                                        clientAddCommand,
+//                                        ClientAddResponseCommand.class);
+//            if (Asserts.isNull(clientAddResponseCommand)
+//                    || clientAddResponseCommand.getClusterResponse().getResponseStatus().equals(ResponseStatus.FAIL)) {
+//                putMsg(result, Status.CLUSTER_CREATE_ERROR);
+//                return result;
+//            }
             insert(cluster);
             return result.ok();
         } catch (CodeGenerateUtils.CodeGenerateException e) {
@@ -167,7 +176,7 @@ public class ClusterServiceImpl extends GenericService<Cluster, Long> implements
             oldCluster.setEnabledFlag(cluster.getEnabledFlag());
             return result.setData(update(oldCluster)).ok();
         }
-        putMsg(result,Status.CLUSTER_CREATE_ERROR);
+        putMsg(result,Status.CLUSTER_OPERATOR_ERROR);
         return result;
     }
 
@@ -221,13 +230,13 @@ public class ClusterServiceImpl extends GenericService<Cluster, Long> implements
         if(cluster.getClusterType().equals(ClusterType.KUBERNETES.getValue())){
             // params can`t be empty, K8s mode
             K8sClusterParams k8sClusterParams = JSONUtils.parseObject(clusterParams, K8sClusterParams.class);
-            if(StringUtils.isEmpty(k8sClusterParams.getNameSpace()) || StringUtils.isEmpty(k8sClusterParams.getKubePath())){
+            if(Asserts.isNull(k8sClusterParams) || StringUtils.isEmpty(k8sClusterParams.getNameSpace()) || StringUtils.isEmpty(k8sClusterParams.getKubePath())){
                 putMsg(result, Status.CLUSTER_PARAMS_IS_EMPTY);
                 return result;
             }
         } else if(cluster.getClusterType().equals(ClusterType.YARN.getValue())){
             YarnClusterParams yarnClusterParams = JSONUtils.parseObject(clusterParams, YarnClusterParams.class);
-            if(StringUtils.isEmpty(yarnClusterParams.getHadoopConfDir())){
+            if(Asserts.isNull(yarnClusterParams) || StringUtils.isEmpty(yarnClusterParams.getHadoopHome())){
                 putMsg(result, Status.CLUSTER_PARAMS_IS_EMPTY);
                 return result;
             }

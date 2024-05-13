@@ -3,6 +3,7 @@ package com.dpline.console.service.impl;
 import com.dpline.common.enums.Status;
 import com.dpline.common.params.CommonProperties;
 import com.dpline.common.params.JobConfig;
+import com.dpline.common.store.FsStore;
 import com.dpline.common.util.Asserts;
 import com.dpline.common.util.FlinkUtils;
 import com.dpline.common.util.Result;
@@ -44,7 +45,12 @@ public class FlinkVersionServiceImpl extends GenericService<FlinkVersion, Long> 
             return result;
         }
         flinkVersion.setFlinkPath(CommonProperties.pathDelimiterResolve(flinkVersion.getFlinkPath()));
-        Optional<String> realVersionFromFlinkHome = FlinkUtils.getRealVersionFromFlinkHome(flinkVersion.getFlinkPath(), false);
+        Optional<String> realVersionFromFlinkHome;
+        if(FsStore.WINDOWS){
+            realVersionFromFlinkHome = FlinkUtils.getRealVersionFromFlinkHome(flinkVersion.getFlinkPath(), true);
+        } else {
+            realVersionFromFlinkHome = FlinkUtils.getRealVersionFromFlinkHome(flinkVersion.getFlinkPath(), false);
+        }
         if(!realVersionFromFlinkHome.isPresent() || !realVersionFromFlinkHome.get().equals(flinkVersion.getRealVersion())){
             putMsg(result, Status.FLINK_REAL_VERSION_NOT_EXISTS);
             return result;

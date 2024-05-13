@@ -2,11 +2,11 @@ package com.dpline.console.service.impl;
 
 import com.dpline.common.Constants;
 import com.dpline.common.enums.*;
+import com.dpline.common.store.FsStore;
 import com.dpline.common.util.*;
 import com.dpline.console.exception.ServiceException;
 import com.dpline.console.service.GenericService;
 import com.dpline.console.util.ContextUtils;
-import com.dpline.common.store.Minio;
 import com.dpline.dao.dto.JarFileDto;
 import java.net.URLDecoder;
 
@@ -15,7 +15,6 @@ import com.dpline.dao.entity.Job;
 import com.dpline.dao.entity.User;
 import com.dpline.dao.generic.Pagination;
 import com.dpline.dao.mapper.JarFileMapper;
-import io.minio.StatObjectResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
@@ -36,7 +35,7 @@ import java.util.regex.Pattern;
 public class JarFileServiceImpl extends GenericService<JarFile, Long> {
 
     @Autowired
-    Minio minio;
+    FsStore fsStore;
 
     @Autowired
     JobServiceImpl jobServiceImpl;
@@ -44,7 +43,7 @@ public class JarFileServiceImpl extends GenericService<JarFile, Long> {
     private Pattern pattern = Pattern.compile("([A-Za-z0-9_\\-.)(])+");
     // upload/jar/public/主资源ID/jarId/jarName
     //           /projectId/主资源ID/jarId/jarName
-    private static String UPLOAD_PATH = "upload/jar/{0}/{1}/{2}/{3}";
+    private static String UPLOAD_PATH = "/upload/jar/{0}/{1}/{2}/{3}";
 
     private static String TMP_PATH = "/tmp/dpline/{0}";
 
@@ -181,7 +180,8 @@ public class JarFileServiceImpl extends GenericService<JarFile, Long> {
         String uploadPath = assemblePath(jarAuthType, projectId.toString(), mainResourceId.toString(), jarId,jarName);
         logger.info("上传jar 路径===" + uploadPath);
         try (InputStream inputStream = file.getInputStream()) {
-            minio.putObject(uploadPath, inputStream);
+            // 文件上传
+            fsStore.upload(inputStream, uploadPath);
             logger.info("上传jar包耗时===" + (System.currentTimeMillis() - start));
             return uploadPath;
         } catch (Exception e) {
@@ -334,8 +334,8 @@ public class JarFileServiceImpl extends GenericService<JarFile, Long> {
         JarFile jarFile = this.getMapper().selectById(jarFileDto.getId());
         InputStream inputStream = null;
         try {
-            StatObjectResponse objectInfo = minio.getObjectInfo(minio.getBucketName(), jarFile.getJarPath());
-            inputStream = minio.getObject(jarFile.getJarPath());
+            long fileSize = fsStore.getFileSize(jarFile.getJarPath());
+            inputStream = fsStore.download(jarFile.getJarPath());
             String fileName = FileUtils.extractFileName(jarFile.getJarPath());
             logger.error("已经获取到文件[{}]，载入服务器，准备下载到本地",fileName);
             // 写入本地文件
@@ -347,7 +347,7 @@ public class JarFileServiceImpl extends GenericService<JarFile, Long> {
             return ResponseEntity
                 .ok()
                 .headers(headers)
-                .contentLength(objectInfo.size())
+                .contentLength(fileSize)
                 .contentType(MediaType.parseMediaType("application/java-archive"))
                 .body(new InputStreamResource(inputStream));
         } catch (Exception e) {
@@ -358,8 +358,7 @@ public class JarFileServiceImpl extends GenericService<JarFile, Long> {
             } catch (IOException ioException) {
                 ioException.printStackTrace();
             }
-            logger.error("文件下载失败。。。");
-            e.printStackTrace();
+            logger.error("File download failed...",ExceptionUtil.exceptionToString(e));
         }
         return null;
     }
@@ -393,7 +392,7 @@ public class JarFileServiceImpl extends GenericService<JarFile, Long> {
         }
         // 需要知道是否已经被绑定了，
         try {
-            minio.removeObject(jarFile.getJarPath());
+            fsStore.delete(jarFile.getJarPath(),false);
             result.setData(this.getMapper().deleteById(jarFileDto.getId())).ok();
             return result;
         } catch (Exception e) {
@@ -407,11 +406,11 @@ public class JarFileServiceImpl extends GenericService<JarFile, Long> {
 
 
     public boolean deleteRemotePath(String jarPath){
-        // upload/jar/public/主资源ID/jarId/jarName
+        // /upload/jar/public/主资源ID/jarId/jarName
         try {
             String versionPath = jarPath.substring(0, jarPath.lastIndexOf("/"));
-            String namePath = versionPath.substring(0, versionPath.lastIndexOf("/")+1);
-            minio.removeObjects(namePath);
+            String namePath = versionPath.substring(0, versionPath.lastIndexOf("/") + 1);
+            fsStore.delete(namePath, true);
             return true;
         } catch (Exception e){
             logger.error(e.toString());

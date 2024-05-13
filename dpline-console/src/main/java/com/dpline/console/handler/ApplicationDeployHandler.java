@@ -5,8 +5,8 @@ import com.dpline.common.enums.FileType;
 import com.dpline.common.enums.JarType;
 import com.dpline.common.enums.ResFsType;
 import com.dpline.common.enums.RunMotorType;
+import com.dpline.common.store.FsStore;
 import com.dpline.common.util.*;
-import com.dpline.common.store.Minio;
 import com.dpline.console.service.impl.JarFileServiceImpl;
 import com.dpline.dao.domain.*;
 import com.dpline.dao.dto.JobDto;
@@ -24,18 +24,19 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 
-public class JobDeployExecutor implements DeployExecutor {
+@Deprecated
+public class ApplicationDeployHandler implements DeployHandler {
 
-    private static final Logger logger = LoggerFactory.getLogger(JobDeployExecutor.class);
+    private static final Logger logger = LoggerFactory.getLogger(ApplicationDeployHandler.class);
 
-    private Minio minio;
+    private FsStore fsStore;
 
     private JarFileServiceImpl jarFileServiceImpl;
 
 
-    public JobDeployExecutor(Minio minio,
+    public ApplicationDeployHandler(FsStore fsStore,
                              JarFileServiceImpl jarFileServiceImpl) {
-        this.minio = minio;
+        this.fsStore = fsStore;
         this.jarFileServiceImpl = jarFileServiceImpl;
     }
 
@@ -89,7 +90,7 @@ public class JobDeployExecutor implements DeployExecutor {
                 JarDepend mainJar = taskConfig.getMainJar();
                 String jarRemotePath = mainJar.getJarPath();
                 String jarLocalPath = taskConfig.mainFilePath() + "/" + mainJar.getJarName();
-                minio.downloadFile(jarRemotePath, jarLocalPath);
+                fsStore.download(jarRemotePath, jarLocalPath,false);
                 boolean main = downLoad(jarRemotePath, jarLocalPath, "MAIN");
                 if (!main){
                     downLoadFlag.set(false);
@@ -107,10 +108,10 @@ public class JobDeployExecutor implements DeployExecutor {
      *
      * @return
      */
-    public boolean deployLocalDirAndJarsToS3(AbstractDeployConfig abstractDeployConfig) {
+    private boolean deployLocalDirAndJarsToS3(AbstractDeployConfig abstractDeployConfig) {
         try {
             // 先移除远程目录
-            minio.removeObjects(abstractDeployConfig.getTaskRemotePath());
+            fsStore.delete(abstractDeployConfig.getTaskRemotePath(),true);
             logger.info("Remote path [{}] has been removed.",abstractDeployConfig.getTaskRemotePath());
             // 然后将本地目录 上传到远程地址
             uploadFile(abstractDeployConfig,"Extend");
@@ -148,13 +149,13 @@ public class JobDeployExecutor implements DeployExecutor {
         }
         File file = new File(localPath);
         if(!file.exists() || ArrayUtil.isEmpty(file.listFiles())){
-            minio.putDirObject(remotePath + "/");
+            fsStore.mkdir(remotePath);
         }
         File[] files = file.listFiles();
         String finalRemotePath = remotePath;
         Arrays.stream(files).forEach(f -> {
             try {
-                minio.putObject(f.getAbsolutePath(), finalRemotePath + "/" + f.getName());
+                fsStore.upload(f.getAbsolutePath(),finalRemotePath + "/" + f.getName(),false,true);
                 logger.info("[{}] jar => [{}] has been upload success",fileTypeFlag,f.getAbsolutePath());
             } catch (Exception e) {
                 logger.error("[{}] jar => [{}] has been upload failed",fileTypeFlag,f.getAbsolutePath());
@@ -163,23 +164,28 @@ public class JobDeployExecutor implements DeployExecutor {
         });
     }
 
+
     @Override
     public void clear(Job job) {
         // 删除本地文件目录
         deleteLocalDir(TaskPathResolver.getTaskLocalDeployDir(job.getProjectId(),job.getId()));
-        // 移除 task 部署目录
-        minio.removeObjects(TaskPathResolver.getTaskRemoteDeployDir(job.getProjectId(),job.getId()));
-        // 移除ha
-        minio.removeObjects(TaskPathResolver.getTaskRemoteHaDir(job.getJobName()));
-        // 移除所有checkpoint
-        minio.removeObjects(TaskPathResolver.getJobDefaultCheckPointDir(job.getProjectId(),job.getId()));
+        try {
+            // 移除 task 部署目录
+            fsStore.delete(TaskPathResolver.getTaskRemoteDeployDir(job.getProjectId(),job.getId()),true);
+            // 移除ha
+            fsStore.delete(TaskPathResolver.getTaskRemoteHaDir(job.getJobName()),true);
+            // 移除所有checkpoint
+            fsStore.delete(TaskPathResolver.getJobDefaultCheckPointDir(job.getProjectId(),job.getId()),true);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
     }
 
     /**
      * download file
      */
     public String deploy(JobDto jobDto) {
-        // 转换配置
         AbstractDeployConfig abstractDeployConfig = this.convertToDeployConfig(jobDto);
         deleteLocalDir(abstractDeployConfig.getTaskLocalPath());
         logger.info("Local dir [{}] has been delete", abstractDeployConfig.getTaskLocalPath());
@@ -192,9 +198,12 @@ public class JobDeployExecutor implements DeployExecutor {
         return null;
     }
 
+    /**
+     * delete local dir
+     * @param path
+     */
     public void deleteLocalDir(String path){
         try {
-            // 删除目录
             File file = new File(path);
             if (file.exists()){
                 FileUtils.deleteDirectory(file);
@@ -211,7 +220,6 @@ public class JobDeployExecutor implements DeployExecutor {
                 case FLINK:
                     logger.info("正在转换Flink专用配置。。。");
                     return this.convertToFlinkDeployConfig(jobDto, new FlinkDeployConfig());
-                case SPARK:
                 default:
                     return null;
             }
@@ -291,12 +299,14 @@ public class JobDeployExecutor implements DeployExecutor {
 
     public boolean downLoad(String jarRemotePath,String jarLocalPath,String logPrefix){
         try {
-            minio.downloadFile(jarRemotePath, jarLocalPath);
+            fsStore.download(jarRemotePath, jarLocalPath,false);
             logger.info("{} Jar => [{}] has been download.", logPrefix, jarLocalPath);
             return true;
         } catch (Exception exception) {
-            logger.error("{} Jar => [{}] download failed.Remote path [{}]", logPrefix, jarLocalPath,jarRemotePath);
-            exception.printStackTrace();
+            logger.error("{} Jar => [{}] download failed.Remote path [{}]. {}", logPrefix,
+                    jarLocalPath,
+                    jarRemotePath,
+                    ExceptionUtil.exceptionToString(exception));
             return false;
         }
     }

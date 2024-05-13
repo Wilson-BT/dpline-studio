@@ -2,14 +2,14 @@ package com.dpline.console.service.impl;
 
 import com.dpline.common.enums.RunModeType;
 import com.dpline.common.enums.Status;
+import com.dpline.common.store.FsStore;
 import com.dpline.common.util.*;
 import com.dpline.console.service.GenericService;
-import com.dpline.common.store.Minio;
 import com.dpline.dao.entity.Job;
 import com.dpline.dao.entity.JobSavepoint;
 import com.dpline.dao.mapper.JobSavepointMapper;
 import com.dpline.dao.rto.JobSavepointRto;
-import io.minio.messages.Item;
+import org.apache.hadoop.fs.FileStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.*;
@@ -22,13 +22,13 @@ import static com.dpline.common.util.TaskPathResolver.SAVEPOINT_DIR_FORMAT;
 @Service
 public class SavePointServiceImpl extends GenericService<JobSavepoint, Long> {
 
-    private static final Pattern REGEX_USER_NAME = Pattern.compile("checkpoint/([a-zA-Z0-9_-]{3,20})/([a-zA-Z0-9._-]{3,45})/([a-zA-Z0-9_-]{3,35})/chk-([a-zA-Z0-9_-]+)/([a-zA-Z0-9_-]+)");
+    private static final Pattern REGEX_USER_NAME = Pattern.compile("/checkpoint/([a-zA-Z0-9_-]{3,20})/([a-zA-Z0-9._-]{3,45})/([a-zA-Z0-9_-]{3,35})/chk-([a-zA-Z0-9_-]+)/([a-zA-Z0-9_-]+)");
 
     @Autowired
     private JobServiceImpl jobServiceImpl;
 
     @Autowired
-    Minio minio;
+    FsStore fsStore;
 
     public SavePointServiceImpl(@Autowired JobSavepointMapper genericMapper) {
         super(genericMapper);
@@ -88,7 +88,7 @@ public class SavePointServiceImpl extends GenericService<JobSavepoint, Long> {
             return arrayList;
         }
         // 获取到路径下所有对象
-        List<Item> items = getRemoteCheckPointList(jobCheckPointDir);
+        List<FileStatus> items = getRemoteCheckPointList(jobCheckPointDir);
         // 对所有对象清洗目录，去重，转化为 JobSavepoint
         return convertAndSort(items);
     }
@@ -98,16 +98,16 @@ public class SavePointServiceImpl extends GenericService<JobSavepoint, Long> {
      * @param items
      * @return
      */
-    public List<JobSavepoint> convertAndSort(List<Item> items) {
+    public List<JobSavepoint> convertAndSort(List<FileStatus> items) {
         List<JobSavepoint> jobSavePoints = new ArrayList<>();
         if(CollectionUtils.isEmpty(items)){
             return jobSavePoints;
         }
         HashMap<String, JobSavepoint> pathHashMap = new HashMap<>();
         items.forEach(item -> {
-            String realPath = item.objectName();
+            String realPath = item.getPath().toString();
             Matcher matcher = REGEX_USER_NAME.matcher(realPath);
-            Date date = Date.from(item.lastModified().toInstant());
+            Date date = new Date(item.getModificationTime());
 
             String lastCheckPointDir = "";
             if(matcher.find()){
@@ -125,8 +125,7 @@ public class SavePointServiceImpl extends GenericService<JobSavepoint, Long> {
             JobSavepoint jobSavepoint = new JobSavepoint();
             jobSavepoint.setSavepointPath(
                 String.format(SAVEPOINT_DIR_FORMAT,
-                    minio.getDefaultFs(),
-                    minio.getBucketName(),
+                        fsStore.getFileSystemPrefix(),
                     lastCheckPointDir)
             );
             String checkPointId = matcher.group(4);
@@ -153,10 +152,10 @@ public class SavePointServiceImpl extends GenericService<JobSavepoint, Long> {
         return jobSavePoints;
     }
 
-    public List<Item> getRemoteCheckPointList(String jobCheckPointPath) throws Exception {
-        List<Item> allObjects = minio.getAllObjectsByPrefix(jobCheckPointPath, true);
+    public List<FileStatus> getRemoteCheckPointList(String jobCheckPointPath) throws Exception {
+        List<FileStatus> allObjects = fsStore.listAllFiles(jobCheckPointPath, true);
         return allObjects.stream().filter(item -> {
-            Matcher matcher = REGEX_USER_NAME.matcher(item.objectName());
+            Matcher matcher = REGEX_USER_NAME.matcher(item.getPath().toString());
             if (matcher.find()) {
                 return true;
             }
@@ -182,7 +181,7 @@ public class SavePointServiceImpl extends GenericService<JobSavepoint, Long> {
         Result<Object> result = new Result<>();
         JobSavepoint jobSavepoints = this.getMapper().selectById(savepointId);
         try {
-            minio.removeObjects(jobSavepoints.getSavepointPath().replace(minio.getFileSystemPrefix(), ""));
+            fsStore.delete(jobSavepoints.getSavepointPath().replace(fsStore.getFileSystemPrefix(), ""),true);
             this.getMapper().deleteById(savepointId);
         } catch (Exception exception) {
             putMsg(result, Status.DELETE_SAVEPOINT_ERROR);
@@ -194,9 +193,9 @@ public class SavePointServiceImpl extends GenericService<JobSavepoint, Long> {
 
     public Result<Object> deleteCheckPoint(String checkpointPath) {
         Result<Object> result = new Result<>();
-        checkpointPath = checkpointPath.replace(minio.getFileSystemPrefix(), "");
+        checkpointPath = checkpointPath.replace(fsStore.getFileSystemPrefix(), "");
         try {
-            minio.removeObjects(checkpointPath);
+            fsStore.delete(checkpointPath,true);
         } catch (Exception e) {
             logger.error("删除 checkpoint 失败", e);
             putMsg(result, Status.DELETE_CHECKPOINT_ERROR);

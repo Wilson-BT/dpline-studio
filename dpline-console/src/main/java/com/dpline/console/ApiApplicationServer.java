@@ -1,7 +1,6 @@
 package com.dpline.console;
 
 import com.dpline.console.service.NettyClientService;
-import com.dpline.common.store.Minio;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,8 +30,6 @@ public class ApiApplicationServer extends SpringBootServletInitializer {
 
     private static Logger logger = LoggerFactory.getLogger(ApiApplicationServer.class);
 
-    @Autowired
-    Minio minio;
 
     @Autowired
     NettyClientService nettyClientService;
@@ -52,8 +49,6 @@ public class ApiApplicationServer extends SpringBootServletInitializer {
         try {
             nettyClientService.startClient();
             logger.info("Netty sever start.");
-            minio.createMinioClient();
-            logger.info("Minio sever start.");
         } catch (Exception e) {
             e.printStackTrace();
         }

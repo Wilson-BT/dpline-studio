@@ -34,6 +34,91 @@ public final class Constants {
      */
     public static final String COMMON_PROPERTIES_PATH = "/common.properties";
 
+    // ==========================================================FileSystem start============================================
+
+    /**
+     * resource storage type
+     */
+    public static final String RESOURCE_STORAGE_TYPE = "resource.storage.type";
+
+    // ====================== S3 FileSystem start =======================
+    /**
+     * AWS S3
+     */
+    public static final String AWS_S3_V4 = "com.amazonaws.services.s3.enableV4";
+
+    /**
+     * fs s3a endpoint
+     */
+    public static final String FS_S3A_ENDPOINT = "fs.s3a.endpoint";
+
+    /**
+     * fs s3a access key
+     */
+    public static final String FS_S3A_ACCESS_KEY = "fs.s3a.access.key";
+
+    /**
+     * fs s3a secret key
+     */
+    public static final String FS_S3A_SECRET_KEY = "fs.s3a.secret.key";
+
+
+    // ====================== S3 FileSystem end =======================
+    // =================== hadoop start ====================
+
+
+    public static final String HADOOP_CONF_DIR = "fs.hdfs.conf.dir";
+    /**
+     * hdfs defaultFS property name. Should be consistent with the property name in hdfs-site.xml
+     */
+    public static final String FS_DEFAULTFS = "fs.defaultFS";
+
+    /**
+     * hadoop user
+     */
+    public static final String HDFS_ROOT_USER = "hdfs.root.user";
+
+    /**
+     * kerberos
+     */
+    public static final String KERBEROS = "kerberos";
+
+    /**
+     * kerberos expire time
+     */
+    public static final String KERBEROS_EXPIRE_TIME = "kerberos.expire.time";
+
+    /**
+     * kerberos conf path
+     */
+    public static final String JAVA_SECURITY_KRB5_CONF_PATH = "java.security.krb5.conf.path";
+
+    /**
+     * login.user.keytab.username
+     */
+    public static final String LOGIN_USER_KEY_TAB_USERNAME = "login.user.keytab.username";
+
+    /**
+     * login.user.keytab.path
+     */
+    public static final String LOGIN_USER_KEY_TAB_PATH = "login.user.keytab.path";
+
+    /**
+     * java.security.krb5.conf
+     */
+    public static final String JAVA_SECURITY_KRB5_CONF = "java.security.krb5.conf";
+
+    /**
+     * hadoop.security.authentication
+     */
+    public static final String HADOOP_SECURITY_AUTHENTICATION = "hadoop.security.authentication";
+
+    /**
+     * hadoop.security.authentication.startup.state
+     */
+    public static final String HADOOP_SECURITY_AUTHENTICATION_STARTUP_STATE = "hadoop.security.authentication.startup.state";
+    // ================================= hadoop end ===================================
+    // ==========================================================FileSystem end============================================
 
     /**
      * resource.view.suffixs
@@ -231,8 +316,6 @@ public final class Constants {
     /**
      * dataSource sensitive param
      */
-
-
     public static final String START_TIME = "start time";
     public static final String END_TIME = "end time";
     public static final String START_END_DATE = "startDate,endDate";
@@ -284,5 +367,11 @@ public final class Constants {
     public final static String JOB_ID = "jobId";
 
     public final static String RUN_TYPE = "runType";
+
+
+    /**
+     * string true
+     */
+    public static final String STRING_TRUE = "true";
 
 }

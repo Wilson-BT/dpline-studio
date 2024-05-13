@@ -3,20 +3,19 @@ package com.dpline.console.service.impl;
 import com.dpline.common.Constants;
 import com.dpline.common.MotorKeyConstants;
 import com.dpline.common.enums.*;
-import com.dpline.common.store.Minio;
+import com.dpline.common.store.FsStore;
 import com.dpline.common.params.*;
 import com.dpline.common.request.*;
 import com.dpline.common.util.*;
 import com.dpline.console.annotation.OperateTypeAnnotation;
-import com.dpline.console.handler.DeployExecutor;
-import com.dpline.console.handler.TaskOperatorFactory;
+import com.dpline.console.handler.*;
 import com.dpline.console.service.GenericService;
 import com.dpline.console.service.NettyClientService;
 import com.dpline.console.util.ContextUtils;
+import com.dpline.dao.domain.AbstractDeployConfig;
 import com.dpline.dao.domain.SourceConfig;
 import com.dpline.dao.dto.DsConfig;
 import com.dpline.dao.dto.FileDto;
-import com.dpline.dao.dto.JobDto;
 import com.dpline.dao.dto.JobRunConfig;
 import com.dpline.dao.entity.*;
 import com.dpline.dao.entity.FlinkVersion;
@@ -30,7 +29,6 @@ import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -53,7 +51,7 @@ public class JobServiceImpl extends GenericService<Job, Long> {
     private static final String JOB_NAME_FORMAT = "%s_%s";
 
     @Autowired
-    Minio minio;
+    FsStore fsStore;
 
     @Autowired
     DockerImageServiceImpl dockerImageServiceImpl;
@@ -392,28 +390,14 @@ public class JobServiceImpl extends GenericService<Job, Long> {
                 return result;
             }
             // find effect main jar
-            JarFile mainEffectJar = jarFileServiceImpl.getMapper().findMainEffectJar(job.getMainResourceId());
-            if (Asserts.isNull(mainEffectJar)) {
-                logger.error("Main resource [{}] is not find.", job.getMainResourceId());
-                putMsg(result, Status.MAIN_FILE_NOT_EXIST_ERROR);
+            AbstractDeployConfig deployConfig = new DeployConfigManager(jarFileServiceImpl).getDeployConfig(job);
+            if(Asserts.isNull(deployConfig)){
+                putMsg(result, Status.JOB_DEPLOY_ERROR);
                 return result;
             }
-            job.setMainJarId(mainEffectJar.getId());
-            logger.info("Main jar Id [{}] has been set into job.", mainEffectJar.getId());
-            DeployExecutor deployHandler = getDeployExecutor(job);
-            if (Asserts.isNull(deployHandler)) {
-                putMsg(result, Status.JOB_MODE_NOT_SUPPORT);
-                return result;
-            }
-            // 将任务配置转化为 jobConfig
-            // 任务部署
-            JobDto jobDto = new JobDto();
-            // 查询所有cluster 的信息
-            BeanUtils.copyProperties(job, jobDto);
-            jobDto.setCluster(cluster);
-            jobDto.setFlinkVersion(flinkVersion);
-            String deployPath = deployHandler.deploy(jobDto);
-            if (StringUtils.isNotBlank(deployPath)) {
+            // do deploy
+            boolean deployPath = getDeployHandler(RunModeType.of(job.getRunModeType()),deployConfig).deploy(job);
+            if (deployPath) {
                 job.setDeployed(1);
                 logger.info(DEPLOY_SUCCESS_FLAG);
                 result.ok().setData(job);
@@ -463,19 +447,19 @@ public class JobServiceImpl extends GenericService<Job, Long> {
             putMsg(result, Status.JOB_RUNNING_ERROR);
             return result;
         }
-        DeployExecutor deployHandler = getDeployExecutor(job);
+        NewDeployHandler deployHandler = getDeployHandler(RunModeType.of(job.getRunModeType()),null);
         if (Asserts.isNull(deployHandler)) {
             putMsg(result, Status.JOB_MODE_NOT_SUPPORT);
             return result;
         }
-        deployHandler.clear(job);
-        this.getMapper().deleteById(jobRto.getId());
-        // 删除 线上 savepoint 地址
-        List<JobSavepoint> jobSavepoints = this.savePointServiceImpl.getMapper().selectByJobId(job.getId());
+
         try {
+            deployHandler.clear(job);
+            this.getMapper().deleteById(jobRto.getId());
+            List<JobSavepoint> jobSavepoints = this.savePointServiceImpl.getMapper().selectByJobId(job.getId());
             jobSavepoints.forEach(jobSavepoint -> {
                 try {
-                    minio.removeObjects(jobSavepoint.getSavepointPath().replace(minio.getFileSystemPrefix(),Constants.BLACK));
+                    fsStore.delete(jobSavepoint.getSavepointPath().replace(fsStore.getFileSystemPrefix(),Constants.BLACK), true);
                 } catch (Exception exception){
                     throw new RuntimeException(exception);
                 }
@@ -488,11 +472,8 @@ public class JobServiceImpl extends GenericService<Job, Long> {
         return result.ok();
     }
 
-    public DeployExecutor getDeployExecutor(Job job) {
-        RunModeType runModeType = RunModeType.of(job.getRunModeType());
-        FileType fileType = FileType.of(job.getFileType());
-        return taskOperatorFactory.getDeployExecutor(fileType, runModeType);
-
+    private NewDeployHandler getDeployHandler(RunModeType runModeType,AbstractDeployConfig deployConfig) {
+        return taskOperatorFactory.getDeployHandler(runModeType,deployConfig);
     }
 
 
@@ -691,8 +672,7 @@ public class JobServiceImpl extends GenericService<Job, Long> {
             .deployAddress(TaskPathResolver.getTaskRemoteDeployDir(job.getProjectId(), job.getId()))
             //s3://flink/checkpoint/projectId/jobId/runJobId/chk-xxxx/meta-
             .defaultCheckPointDir(String.format(SAVEPOINT_DIR_FORMAT,
-                minio.getDefaultFs(),
-                minio.getBucketName(),
+                fsStore.getFileSystemPrefix(),
                 TaskPathResolver.getJobDefaultCheckPointDir(job.getProjectId(), job.getId())))
             .build();
 
@@ -858,8 +838,7 @@ public class JobServiceImpl extends GenericService<Job, Long> {
         }
         // 默认的位置
         String savepointPath = String.format(SAVEPOINT_DIR_FORMAT,
-            minio.getDefaultFs(),
-            minio.getBucketName(),
+            fsStore.getFileSystemPrefix(),
             TaskPathResolver.getJobDefaultSavePointDir(job.getProjectId(),
                 job.getId(),
                 job.getRunJobId()));
