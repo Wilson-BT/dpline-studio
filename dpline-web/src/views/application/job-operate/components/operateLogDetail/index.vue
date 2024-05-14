@@ -89,7 +89,7 @@ export default {
       // console.log(_this.terminal)
       if (window.WebSocket) {
         // 获取到IP
-        var url = 'ws://' + config.socketHost + '/dpline/websocket/'+ sessionType[0] +'/'+ id;
+        var url = 'ws://' + config.socketHost + ":" + config.socketPort + '/dpline/websocket/'+ sessionType[0] +'/'+ id;
         this.socket = new WebSocket(url);
         this.socket.onopen = function() {
           console.log("服务器连接成功: " + url);

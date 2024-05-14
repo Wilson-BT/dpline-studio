@@ -1,6 +1,5 @@
 package com.dpline.console.handler;
 
-import org.springframework.web.socket.WebSocketSession;
 
 public interface WebSocketHandler {
 

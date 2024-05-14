@@ -1,12 +1,9 @@
 package com.dpline.console.socket;
 
 
-import com.dpline.console.handler.WebSocketHandler;
-import io.undertow.util.CopyOnWriteMap;
 import org.springframework.web.socket.WebSocketSession;
 
 import java.io.IOException;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class WsSessionManager {
@@ -63,7 +60,4 @@ public class WsSessionManager {
         // 获得 session
         return SESSION_POOL.get(key);
     }
-
-
-
 }

@@ -50,14 +50,14 @@ public class FileDataListener extends TailerListenerAdapter {
     @Override
     public void handle(String line) { //增加的文件的内容
         if(readEnd){
+            logger.info("Log file read over,ready to exist...");
             return;
         }
-//        logger.info("文件 line:"+line);
         try {
             webSocketSession.sendMessage(new TextMessage(line));
             if (line.contains(DEPLOY_FAILED_FLAG) || line.contains(DEPLOY_SUCCESS_FLAG) || line.contains(EOF_FLAG)) {
                 webSocketSession.sendMessage(new TextMessage(EOF_FLAG));
-                logger.info("日志读取结束，准备退出读取");
+                logger.info("Log file read over,ready to exist...");
                 readEnd = true;
             }
         } catch (IOException e) {

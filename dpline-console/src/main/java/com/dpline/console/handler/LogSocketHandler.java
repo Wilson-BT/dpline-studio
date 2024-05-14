@@ -37,9 +37,8 @@ public class LogSocketHandler implements WebSocketHandler {
         this.logId = logId;
     }
 
-
     /**
-     * 读取部署日志
+     * create new JobLogTailTask every trigger time。
      */
     @Override
     public void trigger() {

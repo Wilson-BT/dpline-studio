@@ -1,8 +1,6 @@
 package com.dpline.console.config;
 
-import com.dpline.console.handler.WebSocketHandler;
 import com.dpline.console.socket.WebSocketEndpointHandler;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
@@ -10,7 +8,8 @@ import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
 import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
 
 @Configuration
-public class WebSocketConfig implements WebSocketConfigurer {
+@EnableWebSocket
+public class WebSocketConfig implements WebSocketConfigurer{
 
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
@@ -23,5 +22,10 @@ public class WebSocketConfig implements WebSocketConfigurer {
         return new WebSocketEndpointHandler();
     }
 
+
+//    @Bean
+//    public ServerEndpointExporter serverEndpointExporter() {
+//        return new ServerEndpointExporter();
+//    }
 }
 

@@ -62,7 +62,6 @@
                     <groupId>org.apache.curator</groupId>
                     <artifactId>curator-client</artifactId>
                 </exclusion>
-
 <!--                <exclusion>-->
 <!--                    <groupId>commons-configuration</groupId>-->
 <!--                    <artifactId>commons-configuration</artifactId>-->

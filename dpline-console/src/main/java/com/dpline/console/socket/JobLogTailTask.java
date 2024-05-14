@@ -160,7 +160,6 @@ public class JobLogTailTask extends Tailer {
 
     public void stop() {
         this.run = false;
-        this.listener.handle(FileDataListener.EOF_FLAG);
     }
 
     private long readLines(RandomAccessFile reader) throws IOException {
