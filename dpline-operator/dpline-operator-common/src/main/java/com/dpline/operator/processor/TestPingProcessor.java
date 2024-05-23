@@ -1,4 +1,4 @@
-package com.dpline.k8s.operator.process;
+package com.dpline.operator.processor;
 
 import com.dpline.remote.command.Command;
 import com.dpline.remote.command.TestCommandResp;

@@ -175,6 +175,11 @@
             </dependency>
             <dependency>
                 <groupId>com.dpline</groupId>
+                <artifactId>dpline-operator-common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.dpline</groupId>
                 <artifactId>dpline-datasource-all</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -409,14 +414,8 @@
             </dependency>
             <dependency>
                 <groupId>org.apache.hadoop</groupId>
-                <artifactId>hadoop-client-api</artifactId>
+                <artifactId>hadoop-client</artifactId>
                 <version>${hadoop.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.xerial.snappy</groupId>
-                        <artifactId>snappy-java</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
 
 

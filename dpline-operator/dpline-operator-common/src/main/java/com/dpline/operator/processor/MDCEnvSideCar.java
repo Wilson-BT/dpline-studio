@@ -1,4 +1,4 @@
-package com.dpline.k8s.operator.process;
+package com.dpline.operator.processor;
 
 import com.dpline.common.Constants;
 import com.dpline.common.enums.OperationsEnum;

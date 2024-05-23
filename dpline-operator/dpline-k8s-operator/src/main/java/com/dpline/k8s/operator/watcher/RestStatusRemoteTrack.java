@@ -10,7 +10,7 @@ import com.dpline.common.util.Asserts;
 import com.dpline.common.util.JSONUtils;
 import com.dpline.common.util.TaskPathResolver;
 import com.dpline.k8s.operator.job.ClusterFlushEntity;
-import com.dpline.k8s.operator.job.TaskRestUrlStatusConvertor;
+import com.dpline.operator.common.TaskRestUrlStatusConvertor;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.slf4j.Logger;
@@ -22,7 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import static com.dpline.k8s.operator.job.TaskRestUrlStatusConvertor.REST_JOBS_OVERVIEWS;
+import static com.dpline.operator.common.TaskRestUrlStatusConvertor.REST_JOBS_OVERVIEWS;
 
 @Component
 public class RestStatusRemoteTrack implements StatusTrack {
@@ -30,27 +30,21 @@ public class RestStatusRemoteTrack implements StatusTrack {
     private static final int FLINK_CLIENT_TIMEOUT_SEC = 30000;
 
     private Logger logger = LoggerFactory.getLogger(RestStatusRemoteTrack.class);
-    public Map<String, ExecStatus> doRequestToRestUrl(ClusterFlushEntity clusterFlushEntity) {
+    public Map<String, ExecStatus> doRequestToRestUrl(String restUrlPath) {
         // 中间的是 ingressHost
-        String newRestUrlPath = CommonProperties.pathDelimiterResolve(
-                TaskPathResolver.getNewRestUrlPath(
-                        clusterFlushEntity.getNameSpace(),
-                        clusterFlushEntity.getIngressHost(),
-                        clusterFlushEntity.getClusterId()
-                ));
         try {
-            HttpResponse response = HttpRequest.get(String.format(REST_JOBS_OVERVIEWS,newRestUrlPath))
+            HttpResponse response = HttpRequest.get(String.format(REST_JOBS_OVERVIEWS,restUrlPath))
                 .timeout(FLINK_CLIENT_TIMEOUT_SEC)
                 .charset(StandardCharsets.UTF_8)
                 .contentType("application/json").execute();
             // 如果不可达的话，需要看看不可达的时间戳，如果高于10s的话，就判断为失败
             if (response.getStatus() != HttpStatus.HTTP_OK) {
-                logger.warn("Rest-url [{}] is not remote for status [{}]", newRestUrlPath, response.getStatus());
+                logger.warn("Rest-url [{}] is not remote for status [{}]", restUrlPath, response.getStatus());
                 return null;
             }
             return parseAndUpdateFromRestUrlStatus(response.body());
         } catch (Exception e) {
-            logger.warn("Rest-url [{}] is not remote for error [{}]", newRestUrlPath, e.toString());
+            logger.warn("Rest-url [{}] is not remote for error [{}]", restUrlPath, e.toString());
         }
         return null;
     }
@@ -83,6 +77,11 @@ public class RestStatusRemoteTrack implements StatusTrack {
 
     @Override
     public Map<String, ExecStatus> remote(ClusterFlushEntity clusterFlushEntity) {
-        return doRequestToRestUrl(clusterFlushEntity);
+        return doRequestToRestUrl(CommonProperties.pathDelimiterResolve(
+                TaskPathResolver.getRestUrlPath(
+                        clusterFlushEntity.getNameSpace(),
+                        clusterFlushEntity.getIngressHost(),
+                        clusterFlushEntity.getClusterId()
+                )));
     }
 }

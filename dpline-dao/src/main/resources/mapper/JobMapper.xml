@@ -65,6 +65,11 @@
             alert_mode=#{alertMode}
         where id=${jobId}
     </update>
+    <update id="updateRestUrl">
+        update dpline_job
+        set rest_url=${restUrl}
+        where id=${jobId}
+    </update>
 
     <select id="queryJobByFileId" resultType="com.dpline.dao.entity.Job">
         select *

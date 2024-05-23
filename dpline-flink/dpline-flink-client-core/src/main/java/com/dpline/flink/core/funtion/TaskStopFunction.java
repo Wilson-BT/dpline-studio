@@ -18,23 +18,21 @@ public class TaskStopFunction extends TaskOperator {
         StopResponse stopResponse = new StopResponse(
             ResponseStatus.FAIL,
             "");
-        FlinkStopRequest stopRequest = (FlinkStopRequest)request;
+        FlinkStopRequest stopRequest = (FlinkStopRequest) request;
         Boolean success;
         String runJobId = stopRequest.getRunJobId();
-        String restUrlPath = TaskPathResolver.getNewRestUrlPath(stopRequest.getNameSpace(),
-            stopRequest.getIngressHost(),
-            stopRequest.getClusterId());
+//        String restUrlPath = TaskPathResolver.getNewRestUrlPath(stopRequest.getRestUrl());
         try {
             if (stopRequest.getWithSavePointAddress()){
                 String savePointAddress = null;
                 savePointAddress = FlinkRestUtil.getInstance()
                     .cancelOrSavePoint(runJobId,
-                        restUrlPath,
+                        stopRequest.getRestUrl(),
                         stopRequest.getSavePointAddress(),
                         true);
                 success = StringUtils.isNotBlank(savePointAddress);
             } else {
-                success = FlinkRestUtil.getInstance().cancel(runJobId, restUrlPath);
+                success = FlinkRestUtil.getInstance().cancel(runJobId, stopRequest.getRestUrl());
             }
             if(success){
                 logger.info("Cluster:[{}], Task: [{}] has been stopped success.",
@@ -43,7 +41,7 @@ public class TaskStopFunction extends TaskOperator {
                 stopResponse.setResponseStatus(ResponseStatus.SUCCESS);
                 stopResponse.setSavePointAddress(stopRequest.getSavePointAddress());
             } else {
-                logger.error("Cluster:[{}], Task: [{}] has been stopped failed..",
+                logger.error("Cluster:[{}], Task: [{}] has been stopped failed.",
                     stopRequest.getClusterId(),
                     stopRequest.getJobId()
                 );

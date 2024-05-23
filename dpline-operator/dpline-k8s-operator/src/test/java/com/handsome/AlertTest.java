@@ -3,7 +3,7 @@ package com.handsome;
 import com.dpline.common.enums.AlertMode;
 import com.dpline.common.enums.ExecStatus;
 import com.dpline.k8s.operator.OperatorServer;
-import com.dpline.k8s.operator.job.TaskFlushEntity;
+import com.dpline.operator.entity.TaskFlushEntity;
 import com.dpline.k8s.operator.watcher.TaskStatusManager;
 import org.junit.Test;
 import org.junit.runner.RunWith;

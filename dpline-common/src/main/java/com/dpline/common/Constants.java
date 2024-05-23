@@ -76,7 +76,7 @@ public final class Constants {
     /**
      * hadoop user
      */
-    public static final String HDFS_ROOT_USER = "hdfs.root.user";
+    public static final String HDFS_ROOT_USER = "fs.hdfs.root.user";
 
     /**
      * kerberos

@@ -1,4 +1,4 @@
-package com.dpline.yarn.operator.processor;
+package com.dpline.operator.processor;
 
 import com.dpline.common.request.TaskAlertEditRequest;
 import com.dpline.common.util.Asserts;

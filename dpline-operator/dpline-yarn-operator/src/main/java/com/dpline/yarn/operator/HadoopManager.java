@@ -18,16 +18,16 @@ import java.util.concurrent.ConcurrentHashMap;
 public class HadoopManager {
 
     private static Logger logger = LoggerFactory.getLogger(HadoopManager.class);
-    private static ConcurrentHashMap<String,Hadoop> hadoopMap = new ConcurrentHashMap<String,Hadoop>();
+    private static ConcurrentHashMap<Long,Hadoop> hadoopMap = new ConcurrentHashMap<Long,Hadoop>();
 
     /**
      * create hadoop(configuration/fs/yarnClient)
      *
-     * @param clusterID
-     * @param homeDir
+     * @param clusterID 集群ID
+     * @param homeDir homeDir
      * @throws IOException
      */
-    public void createHadoop(String clusterID, String homeDir) throws IOException {
+    public void createHadoop(Long clusterID, String homeDir) throws IOException {
         if(hadoopMap.contains(clusterID)){
             logger.info("hadoop already exist, clusterID:{}",clusterID);
             return;
@@ -68,7 +68,7 @@ public class HadoopManager {
      * @param configDir
      * @throws IOException
      */
-    public void updateHadoop(String clusterId,String configDir) throws IOException {
+    public void updateHadoop(Long clusterId,String configDir) throws IOException {
         if(hadoopMap.contains(clusterId)){
            closeHadoop(clusterId);
            hadoopMap.remove(clusterId);
@@ -80,7 +80,7 @@ public class HadoopManager {
      * close hadoop
      * @param clusterId
      */
-    public void closeHadoop(String clusterId){
+    public void closeHadoop(Long clusterId){
         // 关闭hadoop
         Optional.ofNullable(hadoopMap.get(clusterId)).ifPresent(hadoop -> {
             try {
@@ -93,7 +93,7 @@ public class HadoopManager {
         hadoopMap.remove(clusterId);
     }
 
-    public static Optional<Hadoop> getHadoop(String clusterId){
+    public static Optional<Hadoop> getHadoop(Long clusterId){
         return Optional.ofNullable(hadoopMap.get(clusterId));
     }
 

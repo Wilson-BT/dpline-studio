@@ -61,4 +61,6 @@ public interface JobMapper extends GenericMapper<Job,Long> {
                              @Param("alertInstanceId") Long alertInstanceId);
 
     Project selectProjectByJobId(@Param("id") long jobId);
+
+    Integer updateRestUrl(@Param("jobId") Long jobId, @Param("restUrl") String restUrl);
 }

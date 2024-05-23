@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.dpline.dao.generic.GenericModel;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.dpline.common.enums.Flag;
 import lombok.Data;
@@ -12,10 +13,7 @@ import java.util.Date;
 
 @Data
 @TableName("dpline_flink_session")
-public class FlinkSession {
-
-    @TableId(value = "id", type = IdType.AUTO)
-    private Integer id;
+public class FlinkSession extends GenericModel<Long> {
 
     @TableField(value = "flink_session_name")
     private String flinkSessionName;
@@ -38,8 +36,11 @@ public class FlinkSession {
     @TableField(value = "jobmanager_process_size")
     private int jobmanagerProcessSize;
 
-    @TableField(value = "kubernetes_cluster_id")
-    private Long kubernetesClusterId;
+    @TableField(value = "cluster_id")
+    private Long clusterId;
+
+    @TableField(value = "application_id")
+    private String applicationId;
 
     /**
      * is useful
@@ -55,12 +56,12 @@ public class FlinkSession {
 //
 //    @TableField(value = "checkpoint_options")
 //    private CheckpointOptions checkpointOptions;
-
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
-    private Date createTime;
-
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
-    private Date updateTime;
+//
+//    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+//    private Date createTime;
+//
+//    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+//    private Date updateTime;
 
     @TableField(exist = false)
     private String nameSpace;

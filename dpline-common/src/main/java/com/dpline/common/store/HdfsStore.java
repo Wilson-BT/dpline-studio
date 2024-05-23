@@ -4,6 +4,7 @@ import com.dpline.common.Constants;
 import com.dpline.common.enums.ResUploadType;
 import com.dpline.common.params.CommonProperties;
 import com.dpline.common.util.ExceptionUtil;
+import com.dpline.common.util.FileUtils;
 import com.dpline.common.util.HadoopUtil;
 import com.dpline.common.util.PropertyUtils;
 import org.apache.commons.lang.StringUtils;
@@ -13,7 +14,9 @@ import org.apache.hadoop.hdfs.HdfsConfiguration;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -22,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+@Component
 public class HdfsStore implements FsStore {
 
     private FileSystem fs;
@@ -30,9 +34,9 @@ public class HdfsStore implements FsStore {
 
     private String hdfsUser;
 
+    public static String RESOURCE_UPLOAD_PATH = "/dpline";
+
     private static final Logger logger = LoggerFactory.getLogger(HdfsStore.class);
-
-
 
     public HdfsStore() {
         try {
@@ -127,6 +131,11 @@ public class HdfsStore implements FsStore {
     }
 
     @Override
+    public boolean notExists(String fileName) throws IOException {
+        return !fs.exists(new Path(fileName));
+    }
+
+    @Override
     public boolean delete(String filePath, boolean recursive) throws IOException {
         return fs.delete(new Path(filePath), recursive);
     }
@@ -153,10 +162,36 @@ public class HdfsStore implements FsStore {
 
     @Override
     public void download(String srcFilePath, String dstFile, boolean deleteSource) throws IOException {
+        download(srcFilePath,dstFile,deleteSource,false);
+    }
+
+    /**
+     * Down file
+     * @param srcFilePath
+     * @param dstFile
+     * @param deleteSource
+     * @param remainCrc
+     * @throws IOException
+     */
+    public void download(String srcFilePath, String dstFile, boolean deleteSource,boolean remainCrc) throws IOException {
         if(WINDOWS && !dstFile.startsWith("file:")){
             dstFile = String.format("file:\\%s",dstFile);
         }
-        fs.copyToLocalFile(deleteSource,new Path(srcFilePath), new Path(dstFile));
+        Path dstFilePath = new Path(dstFile);
+        fs.copyToLocalFile(deleteSource,new Path(srcFilePath), dstFilePath);
+        if(!remainCrc){
+            String name = dstFilePath.getName();
+            String cleanedFilePath = cleanFilePathPrefix(dstFilePath.getParent().toString());
+            FileUtils.deleteFile(cleanedFilePath + File.separator + String.format(".%s.crc", name));
+        }
+    }
+
+    public static String cleanFilePathPrefix(String filePath) {
+        if (filePath.startsWith("file:/")) {
+            // 使用正则表达式替换去除前缀中的"file:/"
+            return filePath.replaceFirst("file:/", "");
+        }
+        return filePath;
     }
 
     @Override
@@ -207,10 +242,9 @@ public class HdfsStore implements FsStore {
     public List<FileStatus> listAllFiles(String jobCheckPointPath,boolean recursive) throws Exception {
         ArrayList<FileStatus> filePath = new ArrayList<>();
         if(recursive){
-            return listFilesRecursively(jobCheckPointPath,filePath);
+            return listFilesRecursively(jobCheckPointPath, filePath);
         }
-
-        return listFilesWithNoRecursively(jobCheckPointPath,filePath);
+        return listFilesWithNoRecursively(jobCheckPointPath, filePath);
     }
 
     public List<FileStatus> listFilesRecursively(String jobCheckPointPath, List<FileStatus> filePath) throws Exception {

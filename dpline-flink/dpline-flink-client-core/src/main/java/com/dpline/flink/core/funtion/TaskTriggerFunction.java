@@ -26,9 +26,10 @@ public class TaskTriggerFunction extends TaskOperator {
         try {
             String savePointPath = FlinkRestUtil.getInstance().cancelOrSavePoint(
                 triggerRequest.getRunJobId(),
-                TaskPathResolver.getNewRestUrlPath(triggerRequest.getNameSpace(),
-                        triggerRequest.getIngressHost(),
-                        triggerRequest.getClusterId()),
+//                TaskPathResolver.getNewRestUrlPath(triggerRequest.getNameSpace(),
+//                        triggerRequest.getIngressHost(),
+//                        triggerRequest.getClusterId()),
+                triggerRequest.getRestUrl(),
                 triggerRequest.getSavePointAddress(),
                 false);
             if(StringUtils.isNotEmpty(savePointPath)){

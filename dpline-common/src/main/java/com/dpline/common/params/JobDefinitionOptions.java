@@ -84,8 +84,8 @@ public class JobDefinitionOptions implements Serializable {
             return this;
         }
 
-        public Builder defaultCheckPointDir(String jarPath){
-            this.jobDefinitionOptions.setDefaultCheckPointDir(jarPath);
+        public Builder defaultCheckPointDir(String defaultCheckPointDir){
+            this.jobDefinitionOptions.setDefaultCheckPointDir(defaultCheckPointDir);
             return this;
         }
 

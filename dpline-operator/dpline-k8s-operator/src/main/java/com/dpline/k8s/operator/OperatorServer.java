@@ -3,6 +3,7 @@ package com.dpline.k8s.operator;
 import com.dpline.common.enums.ClusterType;
 import com.dpline.k8s.operator.process.*;
 import com.dpline.k8s.operator.watcher.TaskStatusManager;
+import com.dpline.operator.processor.FileDagProcessor;
 import com.dpline.remote.command.CommandType;
 import com.dpline.remote.config.NettyServerConfig;
 import com.dpline.remote.NettyRemoteServer;
@@ -22,6 +23,7 @@ import java.io.Closeable;
 
 @ComponentScan(value = {
     "com.dpline.k8s.operator",
+    "com.dpline.operator",
     "com.dpline.common",
     "com.dpline.alert",
     "com.dpline.dao"})
@@ -65,7 +67,7 @@ public class OperatorServer implements Closeable {
         Thread.currentThread().setName("OperatorServer");
         new SpringApplicationBuilder(OperatorServer.class)
             .web(WebApplicationType.NONE)
-            .profiles("operator")
+            .profiles("k8s-operator")
             .run(args);
     }
 
@@ -80,7 +82,7 @@ public class OperatorServer implements Closeable {
         try {
             startServer();
             // 开启循环查询任务
-            taskStatusManager.start();
+//            taskStatusManager.start();
         } catch (Exception e) {
             e.printStackTrace();
         }

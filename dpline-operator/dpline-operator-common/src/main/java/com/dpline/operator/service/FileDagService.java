@@ -1,4 +1,4 @@
-package com.dpline.k8s.operator.service;
+package com.dpline.operator.service;
 
 import com.dpline.common.enums.FileType;
 import com.dpline.common.enums.OperationsEnum;
@@ -9,27 +9,29 @@ import com.dpline.common.request.FlinkDagResponse;
 import com.dpline.common.request.JarResource;
 import com.dpline.common.store.FsStore;
 import com.dpline.common.store.HdfsStore;
-import com.dpline.common.util.*;
+import com.dpline.common.util.ExceptionUtil;
+import com.dpline.common.util.FileUtils;
+import com.dpline.common.util.JSONUtils;
 import com.dpline.flink.api.TaskOperateProxy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 
 @Service
 public class FileDagService {
 
+    @Autowired
     private FsStore fsStore;
-    public FileDagService(){
-        fsStore = new HdfsStore();
-    }
 
     private static Logger logger = LoggerFactory.getLogger(FileDagService.class);
 
     public synchronized FlinkDagResponse getFileDag(FlinkDagRequest flinkDagRequest){
-        System.out.println(JSONUtils.toJsonString(flinkDagRequest));
+        logger.info(JSONUtils.toJsonString(flinkDagRequest));
         FlinkDagResponse flinkDagResponse = new FlinkDagResponse();
         flinkDagResponse.setResponseStatus(ResponseStatus.FAIL);
         if (flinkDagRequest.getFileType().equals(FileType.SQL_STREAM)){
@@ -47,7 +49,7 @@ public class FileDagService {
         } finally {
             try {
                 // 删除 本地目录
-                FileUtils.deleteDirectory(new java.io.File(flinkDagRequest.getMainJarResource().getLocalParentPath())
+                FileUtils.deleteDirectory(new File(flinkDagRequest.getMainJarResource().getLocalParentPath())
                     .getParentFile());
             } catch (IOException e) {
                 e.printStackTrace();

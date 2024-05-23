@@ -22,6 +22,11 @@ public class FlinkTaskOperateFactory {
         return flinkTaskOperateFactory;
     }
 
+    /**
+     * Get operator function
+     * @param operationsEnum
+     * @return
+     */
     public synchronized TaskOperator getOperator(OperationsEnum operationsEnum){
 
         return taskOperatorMap.computeIfAbsent(operationsEnum, new Function<OperationsEnum, TaskOperator>() {

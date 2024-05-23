@@ -1,20 +1,30 @@
 package com.dpline.yarn.operator.processor;
 
+import com.dpline.common.enums.OperationsEnum;
 import com.dpline.common.request.FlinkTriggerRequest;
+import com.dpline.common.request.TriggerResponse;
 import com.dpline.common.util.Asserts;
+import com.dpline.common.util.ExceptionUtil;
 import com.dpline.common.util.JSONUtils;
+import com.dpline.operator.processor.MDCEnvSideCar;
 import com.dpline.remote.command.Command;
 import com.dpline.remote.command.CommandType;
 import com.dpline.remote.command.TaskTriggerCommand;
+import com.dpline.remote.command.TaskTriggerResponseCommand;
 import com.dpline.remote.handle.NettyRequestProcessor;
+import com.dpline.yarn.operator.service.TaskOperatorService;
 import com.google.common.base.Preconditions;
 import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class TaskTriggerProcessor extends MDCEnvSideCar implements NettyRequestProcessor {
+
+    @Autowired
+    TaskOperatorService taskOperatorService;
 
     private Logger logger = LoggerFactory.getLogger(TaskTriggerProcessor.class);
 
@@ -27,6 +37,21 @@ public class TaskTriggerProcessor extends MDCEnvSideCar implements NettyRequestP
         FlinkTriggerRequest triggerRequest = taskTriggerCommand.getTriggerRequest();
         if (Asserts.isNull(triggerRequest)) {
             return;
+        }
+        try {
+            envInit(triggerRequest
+                            .getJobId()
+                            .toString(),
+                    taskTriggerCommand.getTraceId(),
+                    OperationsEnum.TRIGGER);
+            logger.info("Request has been received,type:[{}], context:[{}]", command.getType(), triggerRequest);
+            TriggerResponse triggerResponse = taskOperatorService.trigger(triggerRequest);
+            TaskTriggerResponseCommand taskTriggerResponseCommand = new TaskTriggerResponseCommand(triggerResponse);
+            channel.writeAndFlush(taskTriggerResponseCommand.convert2Command(command.getOpaque()));
+        } catch (Exception ex) {
+            logger.error(ExceptionUtil.exceptionToString(ex));
+        } finally {
+            revertEnv();
         }
     }
 }

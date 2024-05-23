@@ -3,6 +3,7 @@ package com.dpline.k8s.operator.job;
 import com.dpline.common.enums.ExecStatus;
 import com.dpline.common.enums.RunModeType;
 import com.dpline.k8s.operator.k8s.K8sClusterManager;
+import com.dpline.operator.entity.TaskFlushEntity;
 import lombok.Data;
 import java.util.*;
 

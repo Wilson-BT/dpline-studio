@@ -10,9 +10,9 @@ import com.dpline.dao.entity.Job;
 import com.dpline.dao.mapper.ClusterMapper;
 import com.dpline.dao.mapper.FlinkSessionMapper;
 import com.dpline.dao.mapper.JobMapper;
-import com.dpline.k8s.operator.entry.SniffEvent;
+import com.dpline.operator.entity.SniffEvent;
 import com.dpline.k8s.operator.job.ClusterFlushEntity;
-import com.dpline.k8s.operator.job.TaskFlushEntity;
+import com.dpline.operator.entity.TaskFlushEntity;
 import com.dpline.k8s.operator.k8s.K8sClusterManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -133,11 +133,11 @@ public class TaskClusterMapService extends BaseService {
      * 缓存 session ,
      */
     public void batchCacheAllRunningSessionInst() {
-        List<FlinkSession> flinkSessions = flinkSessionMapper.queryAllOnlineFlinkSession();
+        List<FlinkSession> flinkSessions = flinkSessionMapper.queryAllOnlineFlinkSession(ClusterType.KUBERNETES.getValue());
         flinkSessions.forEach(flinkSession -> {
-            Long kubernetesClusterId = flinkSession.getKubernetesClusterId();
+            Long id = flinkSession.getId();
             ConcurrentHashMap<String, ClusterFlushEntity> clusterIdEntityMap =
-                clientKubePathMap.get(kubernetesClusterId);
+                clientKubePathMap.get(id);
             if (Asserts.isNull(clusterIdEntityMap)) {
                 clusterIdEntityMap = new ConcurrentHashMap<>();
             }
@@ -150,10 +150,10 @@ public class TaskClusterMapService extends BaseService {
                     .builder()
                     .runModeType(RunModeType.K8S_SESSION)
                     .clusterId(flinkSession.getFlinkSessionName())
-                    .clusterEntityId(flinkSession.getKubernetesClusterId())
+                    .clusterEntityId(flinkSession.getClusterId())
                 .build();
             clusterIdEntityMap.put(flinkSession.getFlinkSessionName(), clusterFlushEntity);
-            clientKubePathMap.put(kubernetesClusterId, clusterIdEntityMap);
+            clientKubePathMap.put(id, clusterIdEntityMap);
         });
     }
 
@@ -171,6 +171,10 @@ public class TaskClusterMapService extends BaseService {
         jobList.forEach(new Consumer<Job>() {
             @Override
             public void accept(Job job) {
+                RunModeType runModeType = RunModeType.of(job.getRunModeType());
+                if(!RunModeType.K8S_APPLICATION.equals(runModeType) && !RunModeType.K8S_SESSION.equals(runModeType)){
+                    return;
+                }
                 newTaskAddToCache(job);
             }
         });

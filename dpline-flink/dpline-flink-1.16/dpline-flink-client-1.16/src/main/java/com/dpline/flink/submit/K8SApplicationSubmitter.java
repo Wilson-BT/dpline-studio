@@ -7,12 +7,16 @@ import com.dpline.common.params.K8sOptions;
 import com.dpline.common.params.RuntimeOptions;
 import com.dpline.common.request.FlinkK8sRemoteSubmitRequest;
 import com.dpline.common.request.FlinkRequest;
+import com.dpline.common.request.FlinkSubmitRequest;
 import com.dpline.common.request.SubmitResponse;
 import com.dpline.common.util.Asserts;
+import com.dpline.common.util.ExceptionUtil;
 import com.dpline.common.util.StringUtils;
 import com.dpline.common.util.TaskPathResolver;
 import org.apache.flink.client.deployment.ClusterSpecification;
 import org.apache.flink.client.deployment.application.ApplicationConfiguration;
+import org.apache.flink.client.program.ClusterClient;
+import org.apache.flink.client.program.ClusterClientProvider;
 import org.apache.flink.configuration.*;
 import org.apache.flink.configuration.description.Description;
 import org.apache.flink.kubernetes.KubernetesClusterClientFactory;
@@ -77,22 +81,41 @@ public class K8SApplicationSubmitter extends AbstractConfigSetting {
         // 设置特殊参数
         setSpecialConfig(configuration, flinkRemoteSubmitRequest);
         logger.info("Task will submitted with configuration as [{}]",configuration.toMap().toString());
-        getK8sClusterDescriptorAndSpecification(configuration);
-        ApplicationConfiguration applicationConfiguration = ApplicationConfiguration.fromConfiguration(configuration);
-        clusterDescriptor.deployApplicationCluster(clusterSpecification, applicationConfiguration);
-        logger.info("Task is submitted success for ClusterId:[{}]",k8sOptions.getClusterId());
-        return new SubmitResponse(flinkRemoteSubmitRequest.getJobDefinitionOptions().getJobId(),
-            k8sOptions.getClusterId(),
-            configuration.get(RestOptions.PORT),
-            ResponseStatus.SUCCESS,
-            configuration.get(PipelineOptionsInternal.PIPELINE_FIXED_JOB_ID));
+        ResponseStatus responseStatus = ResponseStatus.FAIL;
+        KubernetesClusterDescriptor clusterDescriptor = null;
+        ClusterClient<String> clusterClient = null;
+        try {
+            KubernetesClusterClientFactory clientFactory = new KubernetesClusterClientFactory();
+            clusterDescriptor = clientFactory.createClusterDescriptor(configuration);
+            ClusterSpecification clusterSpecification = clientFactory.getClusterSpecification(configuration);
+
+            ApplicationConfiguration applicationConfiguration = ApplicationConfiguration.fromConfiguration(configuration);
+            ClusterClientProvider<String> clusterClientProvider = clusterDescriptor.deployApplicationCluster(clusterSpecification, applicationConfiguration);
+            clusterClient = clusterClientProvider.getClusterClient();
+            logger.info("Task is submitted success for ClusterId:[{}]",k8sOptions.getClusterId());
+            responseStatus = ResponseStatus.SUCCESS;
+            return new SubmitResponse(flinkRemoteSubmitRequest.getJobDefinitionOptions().getJobId(),
+                    k8sOptions.getClusterId(),
+                    configuration.get(RestOptions.PORT),
+                    responseStatus,
+                    configuration.get(PipelineOptionsInternal.PIPELINE_FIXED_JOB_ID));
+        } catch (Exception exception){
+            logger.error(ExceptionUtil.exceptionToString(exception));
+            return new SubmitResponse(flinkRemoteSubmitRequest.getJobDefinitionOptions().getJobId(),
+                    k8sOptions.getClusterId(),
+                    configuration.get(RestOptions.PORT),
+                    responseStatus,
+                    configuration.get(PipelineOptionsInternal.PIPELINE_FIXED_JOB_ID));
+        } finally {
+            if(Asserts.isNotNull(clusterDescriptor)){
+                clusterDescriptor.close();
+            }
+            if(Asserts.isNotNull(clusterClient)){
+                clusterClient.close();
+            }
+        }
     }
 
-    private void getK8sClusterDescriptorAndSpecification(Configuration configuration) {
-        KubernetesClusterClientFactory clientFactory = new KubernetesClusterClientFactory();
-        this.clusterDescriptor = clientFactory.createClusterDescriptor(configuration);
-        this.clusterSpecification = clientFactory.getClusterSpecification(configuration);
-    }
 
 
     /**
@@ -102,11 +125,13 @@ public class K8SApplicationSubmitter extends AbstractConfigSetting {
      * @param submitRequest
      */
     @Override
-    public void setSpecialConfig(Configuration configuration, FlinkK8sRemoteSubmitRequest submitRequest) {
+    public void setSpecialConfig(Configuration configuration, FlinkSubmitRequest submitRequest) {
         // 镜像拉取模式
-        K8sOptions k8sOptions = submitRequest.getK8sOptions();
+        FlinkK8sRemoteSubmitRequest flinkK8sRemoteSubmitRequest = (FlinkK8sRemoteSubmitRequest) submitRequest;
+
+        K8sOptions k8sOptions = flinkK8sRemoteSubmitRequest.getK8sOptions();
         // resource 资源设置
-        RuntimeOptions resourceOptions = submitRequest.getRuntimeOptions();
+        RuntimeOptions resourceOptions = flinkK8sRemoteSubmitRequest.getRuntimeOptions();
         // 始终拉取镜像写死
         configuration.set(KubernetesConfigOptions.CONTAINER_IMAGE_PULL_POLICY, KubernetesConfigOptions.ImagePullPolicy.Always);
         // clusterId

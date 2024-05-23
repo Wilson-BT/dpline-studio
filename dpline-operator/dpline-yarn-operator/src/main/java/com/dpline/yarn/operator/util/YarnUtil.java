@@ -1,6 +1,7 @@
 package com.dpline.yarn.operator.util;
 
 import com.dpline.common.Constants;
+import com.dpline.common.util.HadoopUtil;
 import com.dpline.common.util.HttpUtils;
 import com.dpline.common.util.StringUtils;
 import com.dpline.yarn.operator.HadoopManager;
@@ -17,11 +18,11 @@ import org.apache.hadoop.yarn.exceptions.YarnException;
 import org.apache.hadoop.yarn.util.RMHAUtils;
 import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.http.client.utils.URIBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.URISyntaxException;
+import java.net.*;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -29,13 +30,43 @@ import java.util.stream.Collectors;
 
 public class YarnUtil {
 
+
+    private static final Logger logger = LoggerFactory.getLogger(YarnUtil.class);
+
+    public static String doRequest(String url,String preffix) {
+        if (url == null) {
+            return null;
+        }
+        URI uri = null;
+        try {
+
+            if (isHttpOrHttps(url)){
+                uri = new URIBuilder(url).build();
+            } else {
+                uri = new URIBuilder( preffix + "/" + url).build();
+            }
+            RequestConfig requestConfig = RequestConfig
+                    .custom()
+                    .setConnectTimeout(5000, TimeUnit.MILLISECONDS)
+                    .build();
+            return HttpUtils.doGetWithConfig(uri, requestConfig);
+        } catch (Exception e) {
+            logger.error(uri.getPath(), "restRequest", e);
+            return null;
+        }
+    }
+
+    private static boolean isHttpOrHttps(String url) {
+        return url.startsWith("http://") || url.startsWith("https://");
+    }
+
     /**
      * Get application state from yarn
      * @param appId
      * @param clusterId
      * @return
      */
-    public YarnApplicationState getState(String appId,String clusterId) {
+    public YarnApplicationState getState(String appId,Long clusterId) {
         ApplicationId applicationId = ApplicationId.fromString(appId);
         YarnApplicationState state = null;
         try {
@@ -49,7 +80,7 @@ public class YarnUtil {
     }
 
 
-    public static void killApplication(String appId,String clusterId) {
+    public static void killApplication(String appId,Long clusterId) {
             ApplicationId applicationId = ApplicationId.fromString(appId);
             try {
                 YarnClient yarnClient = HadoopManager.getHadoop(clusterId).map(x -> x.getYarnClient()).orElse(null);
@@ -59,7 +90,7 @@ public class YarnUtil {
             }
     }
 
-    public static boolean isContains(String appName,String clusterId) {
+    public static boolean isContains(String appName,Long clusterId) {
         YarnClient yarnClient = HadoopManager.getHadoop(clusterId).map(x -> x.getYarnClient()).orElse(null);
         EnumSet<YarnApplicationState> runningStates = EnumSet.of(YarnApplicationState.RUNNING);
         List<ApplicationReport> runningApps = null;
@@ -80,9 +111,8 @@ public class YarnUtil {
     }
     // 获取 url / 请求url
 
-    public static synchronized String getYarnRestUrl(String clusterId) {
+    public static synchronized String getYarnRestUrl(Configuration configuration) {
         // 获取yarn 的 rest url
-        Configuration configuration = HadoopManager.getHadoop(clusterId).map(x -> x.getConfiguration()).get();
         boolean useHttps = YarnConfiguration.useHttps(configuration);
         String addressPrefix;
         int defaultPort;

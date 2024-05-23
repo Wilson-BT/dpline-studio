@@ -30,20 +30,17 @@ public class FlinkStopRequest extends FlinkRequest {
      */
     String savePointAddress;
 
-    /**
-     * name space
-     */
-    String nameSpace;
+    String restUrl;
+
 
     /**
      * kube path
      */
-    String kubePath;
+//    String kubePath;
 
 
     Long jobId;
 
-    String ingressHost;
 
     public static Builder builder(){
         return new Builder();
@@ -63,15 +60,13 @@ public class FlinkStopRequest extends FlinkRequest {
 
         String savePointAddress;
 
-        String nameSpace;
+        String restUrl;
 
-        String kubePath;
+//        String kubePath;
 
         RunModeType runModeType;
 
         FlinkHomeOptions flinkHomeOptions;
-
-        String ingressHost;
 
         public Builder jobId(Long jobId){
             this.jobId = jobId;
@@ -98,14 +93,10 @@ public class FlinkStopRequest extends FlinkRequest {
             this.savePointAddress = savePointAddress;
             return this;
         }
-        public Builder nameSpace(String nameSpace){
-            this.nameSpace = nameSpace;
-            return this;
-        }
-        public Builder kubePath(String kubePath){
-            this.kubePath = kubePath;
-            return this;
-        }
+//        public Builder kubePath(String kubePath){
+//            this.kubePath = kubePath;
+//            return this;
+//        }
         public Builder flinkHomeOptions(FlinkHomeOptions flinkHomeOptions){
             this.flinkHomeOptions = flinkHomeOptions;
             return this;
@@ -115,8 +106,13 @@ public class FlinkStopRequest extends FlinkRequest {
             return this;
         }
 
-        public Builder ingressHost(String ingressHost){
-            this.ingressHost = ingressHost;
+//        public Builder ingressHost(String ingressHost){
+//            this.ingressHost = ingressHost;
+//            return this;
+//        }
+
+        public Builder restUrl(String restUrl){
+            this.restUrl = restUrl;
             return this;
         }
 
@@ -125,14 +121,15 @@ public class FlinkStopRequest extends FlinkRequest {
             flinkStopRequest.setJobId(this.jobId);
             // Stop 是用 rest 接口调用，不需要加载扩展jar包
             flinkStopRequest.setRunModeType(this.runModeType);
-            flinkStopRequest.setNameSpace(this.nameSpace);
-            flinkStopRequest.setKubePath(this.kubePath);
+//            flinkStopRequest.setNameSpace(this.nameSpace);
+//            flinkStopRequest.setKubePath(this.kubePath);
             flinkStopRequest.setClusterId(this.clusterId);
             flinkStopRequest.setRunJobId(this.runJobId);
-            flinkStopRequest.setIngressHost(this.ingressHost);
+//            flinkStopRequest.setIngressHost(this.ingressHost);
             flinkStopRequest.setSavePointAddress(this.savePointAddress);
             flinkStopRequest.setWithSavePointAddress(this.withSavePointAddress);
             flinkStopRequest.setFlinkHomeOptions(this.flinkHomeOptions);
+            flinkStopRequest.setRestUrl(this.restUrl);
             return flinkStopRequest;
         }
     }

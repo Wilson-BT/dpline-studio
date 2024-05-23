@@ -1,4 +1,4 @@
-package com.dpline.k8s.operator.config;
+package com.dpline.operator.common;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;

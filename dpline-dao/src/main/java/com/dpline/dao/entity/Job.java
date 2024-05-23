@@ -37,9 +37,17 @@ public class Job extends GenericModel<Long> {
     private String fileType;
 
     /**
-     * 集群Id
+     * 集群Id,哪个集群实例
      */
     private Long clusterId;
+
+    /**
+     * on yarn session mode：Flink clusterId，
+     * on yarn application mode：Flink applicationId
+     * on k8s mode ： Flink clusterId
+     * on k8s application mode：Flink applicationId
+     */
+    private String applicationId;
 
     /**
      * image id
@@ -113,7 +121,6 @@ public class Job extends GenericModel<Long> {
     /**
      * rest api
      */
-    @TableField(exist = false)
     private String restUrl;
 
 

@@ -1,5 +1,6 @@
 package com.dpline.console.service.impl;
 
+import com.dpline.common.enums.RunMode;
 import com.dpline.common.enums.RunModeType;
 import com.dpline.common.enums.Status;
 import com.dpline.common.store.FsStore;
@@ -79,11 +80,11 @@ public class SavePointServiceImpl extends GenericService<JobSavepoint, Long> {
         ArrayList<JobSavepoint> arrayList = new ArrayList<>();
         String jobCheckPointDir = "";
         RunModeType runModeType = RunModeType.of(job.getRunModeType());
-        if (RunModeType.K8S_APPLICATION.equals(runModeType)) {
+        if (RunMode.APPLICATION.equals(runModeType.getRunMode())) {
             jobCheckPointDir = TaskPathResolver.getJobDefaultCheckPointDir(job.getProjectId(), job.getId(), job.getRunJobId());
         } else {
-            // TODO 暂时不支持其他模式，路径：
-            //  application 模式 checkpoint/projectId/jobId/flinkJobId/chk-xxx/_metadata (以上代码已经实现)
+            // TODO
+            //  application 模式 /dpline/checkpoint/projectId/jobId/flinkJobId/chk-xxx/_metadata (以上代码已经实现)
             //  session 模式 checkpoint/projectId/sessionId/jobId/chk-xxx/_metadata     (需要实现)
             return arrayList;
         }
@@ -153,6 +154,9 @@ public class SavePointServiceImpl extends GenericService<JobSavepoint, Long> {
     }
 
     public List<FileStatus> getRemoteCheckPointList(String jobCheckPointPath) throws Exception {
+        if(fsStore.notExists(jobCheckPointPath)){
+            return new ArrayList<>();
+        }
         List<FileStatus> allObjects = fsStore.listAllFiles(jobCheckPointPath, true);
         return allObjects.stream().filter(item -> {
             Matcher matcher = REGEX_USER_NAME.matcher(item.getPath().toString());

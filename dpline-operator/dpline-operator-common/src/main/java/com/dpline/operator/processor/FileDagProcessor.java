@@ -1,11 +1,14 @@
-package com.dpline.k8s.operator.process;
+package com.dpline.operator.processor;
 
 import com.dpline.common.request.FlinkDagRequest;
 import com.dpline.common.request.FlinkDagResponse;
 import com.dpline.common.util.Asserts;
 import com.dpline.common.util.JSONUtils;
-import com.dpline.k8s.operator.service.FileDagService;
-import com.dpline.remote.command.*;
+import com.dpline.operator.service.FileDagService;
+import com.dpline.remote.command.Command;
+import com.dpline.remote.command.CommandType;
+import com.dpline.remote.command.FileDagCommand;
+import com.dpline.remote.command.FileDagResponseCommand;
 import com.dpline.remote.handle.NettyRequestProcessor;
 import com.google.common.base.Preconditions;
 import io.netty.channel.Channel;

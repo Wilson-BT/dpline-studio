@@ -59,8 +59,8 @@ export const jarTypeList = [
 
 
 export const runModeList = [
-    { label: "Session", value: "session" },
-    { label: "Application", value: "application" },
+    { label: "SESSION", value: "session" },
+    { label: "APPLICATION", value: "application" },
 ]
 
 export const execStatusList = [

@@ -3,6 +3,7 @@ package com.dpline.flink.submit;
 import com.dpline.common.params.K8sOptions;
 import com.dpline.common.request.FlinkK8sRemoteSubmitRequest;
 import com.dpline.common.request.FlinkRequest;
+import com.dpline.common.request.FlinkSubmitRequest;
 import com.dpline.common.util.*;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.dpline.common.enums.ResponseStatus;
@@ -29,7 +30,7 @@ public class K8SSessionSubmitter extends AbstractConfigSetting {
     private final static Logger logger = LoggerFactory.getLogger(K8SSessionSubmitter.class);
 
     @Override
-    public void setSpecialConfig(Configuration configuration, FlinkK8sRemoteSubmitRequest submitRequest) {
+    public void setSpecialConfig(Configuration configuration, FlinkSubmitRequest submitRequest) {
     }
 
     public SubmitResponse submit(FlinkRequest submitRequest) throws Exception {
@@ -51,7 +52,7 @@ public class K8SSessionSubmitter extends AbstractConfigSetting {
             .build();
         String jarRunRequestStr = JSONUtils.toJsonString(jarRunRequest);
         // session need session Id
-        String restUrlPath = TaskPathResolver.getNewRestUrlPath(k8sOptions.getNameSpace(),k8sOptions.getIngressHost(),k8sOptions.getSessionName());
+        String restUrlPath = TaskPathResolver.getRestUrlPath(k8sOptions.getNameSpace(),k8sOptions.getIngressHost(),k8sOptions.getSessionName());
         String restJarRunUrlPath = String.format("%s/jars/%s/run", restUrlPath,
             flinkRemoteSubmitRequest.getJobDefinitionOptions().getDeployAddress());
         String responseContent = HttpUtils.doStringBodyPost(restJarRunUrlPath, jarRunRequestStr);

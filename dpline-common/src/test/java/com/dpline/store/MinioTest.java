@@ -11,7 +11,7 @@ public class MinioTest {
     public void test() {
         HdfsStore hdfsStore = new HdfsStore();
         try {
-            hdfsStore.upload("C:\\Users\\wangchunshun\\Desktop\\投流数仓.md", "/xxx/dsgdsfr/dfgsefg.exe", false, true);
+            hdfsStore.upload("C:\\Users\\wangchunshun\\Desktop\\Document\\flink-1.16.3\\examples\\batch\\WordCount.jar", "/dpline/upload/jar/13431396471104/13534692796864/13565253555008/WordCount.jar", false, true);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -21,7 +21,7 @@ public class MinioTest {
     public void deleteTest(){
         HdfsStore hdfsStore = new HdfsStore();
         try {
-            hdfsStore.delete("/xxx", true);
+            hdfsStore.delete("/xxx/dsgdsfr", true);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -35,7 +35,7 @@ public class MinioTest {
     public void copyTest(){
         HdfsStore hdfsStore = new HdfsStore();
         try {
-            hdfsStore.copy("/dpline-dao-0.0.4.jar","/nihao/dpline-dao-0.0.4.jar",false, true);
+            hdfsStore.copy("/xxx/dsgdsfr/xxx.jar","/nihao/dpline-dao-0.0.4.jar",false, true);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

@@ -27,15 +27,20 @@ public class FlinkTriggerRequest extends FlinkRequest {
     RunModeType runModeType;
 
     /**
+     * rest url
+     */
+    String restUrl;
+
+    /**
      * save point address
      */
     String savePointAddress;
 
-    String nameSpace;
-
     Long jobId;
 
-    String ingressHost;
+//    String nameSpace;
+
+//    String ingressHost;
 
     public static Builder builder(){
         return new Builder();
@@ -53,9 +58,11 @@ public class FlinkTriggerRequest extends FlinkRequest {
 
         String savePointAddress;
 
-        String nameSpace;
+        String restUrl;
 
-        String ingressHost;
+//        String nameSpace;
+
+//        String ingressHost;
 
         FlinkHomeOptions flinkHomeOptions;
 
@@ -84,18 +91,23 @@ public class FlinkTriggerRequest extends FlinkRequest {
             return this;
         }
 
-        public Builder nameSpace(String nameSpace){
-            this.nameSpace = nameSpace;
-            return this;
-        }
+//        public Builder nameSpace(String nameSpace){
+//            this.nameSpace = nameSpace;
+//            return this;
+//        }
 
         public Builder flinkHomeOptions(FlinkHomeOptions flinkHomeOptions){
             this.flinkHomeOptions = flinkHomeOptions;
             return this;
         }
+//
+//        public Builder ingressHost(String ingressHost){
+//            this.ingressHost = ingressHost;
+//            return this;
+//        }
 
-        public Builder ingressHost(String ingressHost){
-            this.ingressHost = ingressHost;
+        public Builder restUrl(String restUrl){
+            this.restUrl = restUrl;
             return this;
         }
 
@@ -108,8 +120,8 @@ public class FlinkTriggerRequest extends FlinkRequest {
             flinkTriggerRequest.setClusterId(this.clusterId);
             flinkTriggerRequest.setRunModeType(this.runModeType);
             flinkTriggerRequest.setSavePointAddress(this.savePointAddress);
-            flinkTriggerRequest.setIngressHost(this.ingressHost);
-            flinkTriggerRequest.setNameSpace(nameSpace);
+//            flinkTriggerRequest.setIngressHost(this.ingressHost);
+//            flinkTriggerRequest.setNameSpace(nameSpace);
             return flinkTriggerRequest;
         }
     }

@@ -10,10 +10,10 @@ import com.dpline.dao.entity.Job;
 import com.dpline.dao.mapper.ClusterMapper;
 import com.dpline.dao.mapper.JobMapper;
 import com.dpline.k8s.operator.service.TaskIngressOperateProxy;
-import com.dpline.k8s.operator.config.WatcherConfig;
-import com.dpline.k8s.operator.entry.SniffEvent;
+import com.dpline.operator.common.WatcherConfig;
+import com.dpline.operator.entity.SniffEvent;
 import com.dpline.k8s.operator.job.ClusterFlushEntity;
-import com.dpline.k8s.operator.job.TaskFlushEntity;
+import com.dpline.operator.entity.TaskFlushEntity;
 import com.dpline.k8s.operator.k8s.K8sClusterManager;
 import com.dpline.k8s.operator.service.TaskClusterMapService;
 import org.slf4j.Logger;
@@ -115,7 +115,7 @@ public class TaskStatusManager {
      * 嗅探任务状态
      */
     public boolean sniff(SniffEvent sniffEvent){
-        Optional<ConcurrentHashMap<String, ClusterFlushEntity>> clusterIdEntityMap = taskClusterMapService.getClusterIdEntityMap(sniffEvent.getClusterEntityId());
+        Optional<ConcurrentHashMap<String, ClusterFlushEntity>> clusterIdEntityMap = taskClusterMapService.getClusterIdEntityMap(sniffEvent.getClusterId());
         // 如果集群中不存在 cluster，直接退出
         if(!clusterIdEntityMap.isPresent()){
             return false;

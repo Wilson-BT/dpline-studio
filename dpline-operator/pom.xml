@@ -10,6 +10,7 @@
     <modules>
         <module>dpline-yarn-operator</module>
         <module>dpline-k8s-operator</module>
+        <module>dpline-operator-common</module>
     </modules>
 
     <modelVersion>4.0.0</modelVersion>
@@ -82,8 +83,7 @@
         </dependency>
         <dependency>
             <groupId>com.dpline</groupId>
-            <artifactId>dpline-common</artifactId>
+            <artifactId>dpline-operator-common</artifactId>
         </dependency>
-
     </dependencies>
 </project>

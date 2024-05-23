@@ -131,10 +131,12 @@ public class JobServiceImpl extends GenericService<Job, Long> {
                     jobRunConfig.setClusterName(cluster.getClusterName());
                     Long motorVersionId = job.getMotorVersionId();
                     FlinkVersion flinkVersion = flinkVersionServiceImpl.getMapper().selectById(motorVersionId);
-                    DockerImage dockerImage = dockerImageServiceImpl.getMapper().selectById(job.getImageId());
+                    if (ClusterType.KUBERNETES.equals(ClusterType.of(cluster.getClusterType()))){
+                        DockerImage dockerImage = dockerImageServiceImpl.getMapper().selectById(job.getImageId());
+                        jobRunConfig.setImageName(dockerImage.getImageName());
+                    }
                     jobRunConfig.setMotorVersion(flinkVersion.getRealVersion());
                     jobRunConfig.setRunModeType(job.getRunModeType());
-                    jobRunConfig.setImageName(dockerImage.getImageName());
                     RuntimeOptions runtimeOptions = JSONUtils.parseObject(job.getRuntimeOptions(), RuntimeOptions.class);
                     jobRunConfig.setJobManagerCpus(runtimeOptions.getJobManagerCpu());
                     jobRunConfig.setTaskManagerCpus(runtimeOptions.getTaskManagerCpu());
@@ -241,7 +243,7 @@ public class JobServiceImpl extends GenericService<Job, Long> {
         this.executePagination(this::queryJobs, pagination);
         List<Job> rows = pagination.getRows();
         rows.forEach(job -> {
-            initJobRestUrl(job);
+            resetJobRestUrl(job);
             job.setRunModeType(RunModeType.of(job.getRunModeType()).getRunMode().getValue());
             // 解压job flink 额外配置
             job.setOtherRuntimeConfig(
@@ -260,24 +262,27 @@ public class JobServiceImpl extends GenericService<Job, Long> {
 
     /**
      * TODO 解析 job rest-url,如果是 session 模式，则自动生成 rest-url
+     * 非k8s，集群模式，直接生成
      * @param job
      */
-    void initJobRestUrl(Job job){
+    void resetJobRestUrl(Job job){
         String clusterParams = job.getClusterParams();
+        if(!RunModeType.of(job.getRunModeType()).getClusterType().equals(ClusterType.KUBERNETES)){
+            return;
+        }
         K8sClusterParams k8sClusterParams = JSONUtils.parseObject(clusterParams, K8sClusterParams.class);
         if(Asserts.isNull(k8sClusterParams)){
             logger.warn("job [{}] cluster Params is not exists",job.getJobName());
             return;
         }
         //Session 模式下，jobName 需要设置为session 的 name
-        job.setRestUrl(TaskPathResolver.getWebViewUrl(
-                k8sClusterParams.getNameSpace(),
-                k8sClusterParams.getIngressHost(),
-                job.getJobName(),
-                job.getRunJobId()
+        job.setRestUrl(TaskPathResolver.jobOverViewUrl(
+                        k8sClusterParams.getNameSpace(),
+                        k8sClusterParams.getIngressHost(),
+                        job.getJobName(),
+                        job.getRunJobId()
                 )
         );
-
     }
 
     private void correctExecStatusDisplay(Job job) {
@@ -447,7 +452,7 @@ public class JobServiceImpl extends GenericService<Job, Long> {
             putMsg(result, Status.JOB_RUNNING_ERROR);
             return result;
         }
-        NewDeployHandler deployHandler = getDeployHandler(RunModeType.of(job.getRunModeType()),null);
+        DeployHandler deployHandler = getDeployHandler(RunModeType.of(job.getRunModeType()),null);
         if (Asserts.isNull(deployHandler)) {
             putMsg(result, Status.JOB_MODE_NOT_SUPPORT);
             return result;
@@ -472,7 +477,7 @@ public class JobServiceImpl extends GenericService<Job, Long> {
         return result.ok();
     }
 
-    private NewDeployHandler getDeployHandler(RunModeType runModeType,AbstractDeployConfig deployConfig) {
+    private DeployHandler getDeployHandler(RunModeType runModeType, AbstractDeployConfig deployConfig) {
         return taskOperatorFactory.getDeployHandler(runModeType,deployConfig);
     }
 
@@ -572,7 +577,7 @@ public class JobServiceImpl extends GenericService<Job, Long> {
             logger.info("Operate has been insert into cache");
 
             nettyClientService.sendCommandAsync(
-                    ClusterType.KUBERNETES,
+                    RunModeType.of(job.getRunModeType()).getClusterType(),
                 new TaskRunCommand(JSONUtils.toJsonString(req),
                                    req.getRunModeType().getClusterType().getValue(),
                                    MDC.get(Constants.TRACE_ID)
@@ -583,14 +588,21 @@ public class JobServiceImpl extends GenericService<Job, Long> {
                         Command responseCommand = responseFuture.getResponseCommand();
                         TaskRunResponseCommand taskRunResponseCommand = JSONUtils.parseObject(responseCommand.getBody(), TaskRunResponseCommand.class);
                         // 任务执行失败
-                        if (Asserts.isNotNull(taskRunResponseCommand) &&
-                            taskRunResponseCommand.getSubmitResponse().getResponseStatus().equals(ResponseStatus.FAIL)) {
-                            // 失败即移除
+                        if(Asserts.isNull(taskRunResponseCommand)){
+                            return;
+                        }
+                        if (taskRunResponseCommand.getSubmitResponse().getResponseStatus().equals(ResponseStatus.FAIL)) {
+                            // failed,then delete
                             operateMap.remove(jobRto.getId());
                             job.setExecStatus(ExecStatus.FAILED.name());
-                            update(job);
+                        } else {
+                            SubmitResponse submitResponse = taskRunResponseCommand.getSubmitResponse();
+                            job.setApplicationId(submitResponse.getApplicationId());
+                            if(StringUtils.isNotBlank(submitResponse.getRestUrl())){
+                                job.setRestUrl(taskRunResponseCommand.getSubmitResponse().getRestUrl());
+                            }
                         }
-
+                        update(job);
                     }
                 }
             );
@@ -640,7 +652,8 @@ public class JobServiceImpl extends GenericService<Job, Long> {
         // run time config
         RuntimeOptions runtimeOptions = JSONUtils.parseObject(job.getRuntimeOptions(), RuntimeOptions.class);
         if (Asserts.isNull(runtimeOptions)) {
-            logger.error("运行配置解析失败,RuntimeOptions=>{}", runtimeOptions.toString());
+            logger.error("运行配置解析失败,Run" +
+                    "timeOptions=>{}", runtimeOptions.toString());
             putMsg(result,Status.RUNTIME_OPTIONS_PARSE_ERROR);
             return Optional.empty();
         }
@@ -667,19 +680,37 @@ public class JobServiceImpl extends GenericService<Job, Long> {
             .appArgs(job.getAppArgs())
             .fileType(FileType.of(job.getFileType()))
             .jobName(job.getJobName())
-            // 任务远程部署地址
-            .jarPath(TaskPathResolver.getFlinkRunMainJarPath(jarFile.getJarName()))
             .deployAddress(TaskPathResolver.getTaskRemoteDeployDir(job.getProjectId(), job.getId()))
-            //s3://flink/checkpoint/projectId/jobId/runJobId/chk-xxxx/meta-
-            .defaultCheckPointDir(String.format(SAVEPOINT_DIR_FORMAT,
-                fsStore.getFileSystemPrefix(),
-                TaskPathResolver.getJobDefaultCheckPointDir(job.getProjectId(), job.getId())))
+            //TODO  hdfs的路径 s3://flink/checkpoint/projectId/jobId/runJobId/chk-xxxx/meta-
+            .defaultCheckPointDir(
+                    String.format(SAVEPOINT_DIR_FORMAT,
+                            fsStore.getFileSystemPrefix(),
+                            TaskPathResolver.getJobDefaultCheckPointDir(job.getProjectId(), job.getId()))
+            )
             .build();
 
         switch (runModeType) {
             case LOCAL:
             case REMOTE:
+                return Optional.empty();
             case YARN_APPLICATION:
+                YarnOptions yarnOptions = YarnOptions.builder()
+                        .flinkJarDirPath(Arrays.asList(flinkVersionServiceImpl.getLibRemotePath(flinkVersion.getRealVersion()),
+                                flinkVersionServiceImpl.getOptRemotePath(flinkVersion.getRealVersion()),
+                                flinkVersionServiceImpl.getPluginsRemotePath(flinkVersion.getRealVersion())))
+                        .flinkDistJarPath(flinkVersionServiceImpl.getFlinkDistRemoteFsPath(flinkVersion.getRealVersion()))
+                        .build();
+                String mainJarRemotePath = String.format("%s%s/%s", fsStore.getFileSystemPrefix(),
+                                               TaskPathResolver.mainRemoteFilePath(job.getProjectId(), job.getId()),
+                                                jarFile.getJarName());
+                jobDefinitionOptions.setJarPath(mainJarRemotePath);
+                return Optional.ofNullable(YarnRemoteSubmitRequest.builder()
+                        .yarnOptions(yarnOptions)
+                        .flinkHomeOptions(flinkHomeOptions)
+                        .jobDefinitionOptions(jobDefinitionOptions)
+                        .resourceOptions(runtimeOptions)
+                        .runModeType(runModeType)
+                        .build());
             case YARN_SESSION:
             case K8S_SESSION:
                 return Optional.empty();
@@ -690,6 +721,7 @@ public class JobServiceImpl extends GenericService<Job, Long> {
                     putMsg(result,Status.JOB_IMAGE_NOT_EXISTS);
                     return Optional.empty();
                 }
+                jobDefinitionOptions.setJarPath(TaskPathResolver.getFlinkRunMainJarPath(jarFile.getJarName()));
                 // 查询 k8s 的信息
                 K8sClusterParams k8sClusterParams = JSONUtils.parseObject(cluster.getClusterParams(), K8sClusterParams.class);
                 logger.info("K8sClusterParams: {}",k8sClusterParams);
@@ -754,7 +786,7 @@ public class JobServiceImpl extends GenericService<Job, Long> {
 
         TaskStopResponseCommand taskStopResponseCommand =
             (TaskStopResponseCommand) nettyClientService.sendCommand(
-                    ClusterType.KUBERNETES,
+                    RunModeType.of(job.getRunModeType()).getClusterType(),
                 new TaskStopCommand(flinkStopRequest,
                     flinkStopRequest.getRunModeType().getClusterType().getValue(),
                     MDC.get(Constants.TRACE_ID)),
@@ -786,10 +818,29 @@ public class JobServiceImpl extends GenericService<Job, Long> {
         FlinkVersion flinkVersion = flinkVersionServiceImpl.getMapper().selectById(job.getMotorVersionId());
         Cluster cluster = clusterServiceImpl.getMapper().selectById(job.getClusterId());
         String clusterParams = cluster.getClusterParams();
+
+        FlinkStopRequest flinkStopRequest = FlinkStopRequest.builder()
+                .withSavePointAddress(StringUtils.isNotBlank(savePointPath))
+                .jobId(job.getId())
+                .projectId(job.getProjectId())
+                .runJobId(job.getRunJobId())
+                .runModeType(runModeType)
+                .clusterId(job.getJobName())
+                .savePointAddress(savePointPath)
+                .flinkHomeOptions(
+                        FlinkHomeOptions
+                                .builder()
+                                .flinkPath(flinkVersion.getFlinkPath())
+                                .realVersion(flinkVersion.getRealVersion())
+                                .build()
+                )
+                .build();
         switch (runModeType) {
             case LOCAL:
             case REMOTE:
             case YARN_APPLICATION:
+                flinkStopRequest.setRestUrl(job.getRestUrl());
+                break;
             case YARN_SESSION:
             case K8S_SESSION:
                 // sessionId 作为 imageId
@@ -801,29 +852,10 @@ public class JobServiceImpl extends GenericService<Job, Long> {
                 if (Asserts.isNull(kubePathCluster)) {
                     return Optional.empty();
                 }
-                FlinkStopRequest flinkStopRequest = FlinkStopRequest.builder()
-                        .withSavePointAddress(StringUtils.isNotBlank(savePointPath))
-                        .jobId(job.getId())
-                        .projectId(job.getProjectId())
-                        .runJobId(job.getRunJobId())
-                        .runModeType(runModeType)
-                        .clusterId(job.getJobName())
-                        .nameSpace(kubePathCluster.getNameSpace())
-                        .kubePath(kubePathCluster.getKubePath())
-                        .savePointAddress(savePointPath)
-                        .ingressHost(kubePathCluster.getIngressHost())
-                        .flinkHomeOptions(
-                            FlinkHomeOptions
-                                .builder()
-                                .flinkPath(flinkVersion.getFlinkPath())
-                                .realVersion(flinkVersion.getRealVersion())
-                                .build()
-                        )
-                        .build();
-                return Optional.of(flinkStopRequest);
-
+                flinkStopRequest.setRestUrl(TaskPathResolver.getRestUrlPath(kubePathCluster.getNameSpace(),kubePathCluster.getIngressHost(),job.getJobName()));
+                break;
         }
-        return Optional.empty();
+        return Optional.of(flinkStopRequest);
     }
 
     @Transactional
@@ -847,7 +879,7 @@ public class JobServiceImpl extends GenericService<Job, Long> {
             triggerSavepoint -> {
                 TaskTriggerResponseCommand taskStopResponseCommand =
                     (TaskTriggerResponseCommand) nettyClientService.sendCommand(
-                            ClusterType.KUBERNETES,
+                            RunModeType.of(job.getRunModeType()).getClusterType(),
                         new TaskTriggerCommand(
                             triggerSavepoint,
                             triggerSavepoint
@@ -883,10 +915,24 @@ public class JobServiceImpl extends GenericService<Job, Long> {
         // flink 集群
         Cluster cluster = clusterServiceImpl.getMapper().selectById(job.getClusterId());
         String clusterParams = cluster.getClusterParams();
+        FlinkTriggerRequest flinkTriggerRequest = FlinkTriggerRequest.builder()
+                .runJobId(job.getRunJobId())
+                .jobId(job.getId())
+                .clusterId(job.getJobName())
+                .flinkHomeOptions(
+                        FlinkHomeOptions.builder()
+                                .flinkPath(flinkVersion.getFlinkPath())
+                                .realVersion(flinkVersion.getRealVersion())
+                                .build()
+                )
+                .runModeType(runModeType)
+                .savePointAddress(savepointAddress)
+                .build();
         switch (runModeType) {
             case LOCAL:
             case REMOTE:
             case YARN_APPLICATION:
+                flinkTriggerRequest.setRestUrl(job.getRestUrl());
             case YARN_SESSION:
             case K8S_SESSION:
                 return Optional.empty();
@@ -895,24 +941,12 @@ public class JobServiceImpl extends GenericService<Job, Long> {
                 if (Asserts.isNull(kubePathCluster)) {
                     return Optional.empty();
                 }
-                FlinkTriggerRequest flinkTriggerRequest = FlinkTriggerRequest.builder()
-                    .runJobId(job.getRunJobId())
-                    .jobId(job.getId())
-                    .clusterId(job.getJobName())
-                    .flinkHomeOptions(
-                        FlinkHomeOptions.builder()
-                            .flinkPath(flinkVersion.getFlinkPath())
-                            .realVersion(flinkVersion.getRealVersion())
-                           .build()
-                    )
-                    .ingressHost(kubePathCluster.getIngressHost())
-                    .runModeType(runModeType)
-                    .savePointAddress(savepointAddress)
-                    .nameSpace(kubePathCluster.getNameSpace())
-                    .build();
-                return Optional.of(flinkTriggerRequest);
+                flinkTriggerRequest
+                    .setRestUrl(TaskPathResolver.getRestUrlPath(kubePathCluster.getNameSpace(),
+                            kubePathCluster.getIngressHost(),
+                            job.getJobName()));
         }
-        return Optional.empty();
+        return Optional.of(flinkTriggerRequest);
     }
 
     /**

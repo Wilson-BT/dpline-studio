@@ -26,7 +26,7 @@
 
         <dependency>
             <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-client-api</artifactId>
+            <artifactId>hadoop-client</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>org.xerial.snappy</groupId>

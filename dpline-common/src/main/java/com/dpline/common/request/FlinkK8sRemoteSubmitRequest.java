@@ -9,13 +9,10 @@ import lombok.Data;
 
 
 @Data
-public class FlinkK8sRemoteSubmitRequest extends FlinkRequest {
+public class FlinkK8sRemoteSubmitRequest extends FlinkSubmitRequest {
 
-    private RuntimeOptions runtimeOptions;
 
     private K8sOptions k8sOptions;
-
-    private JobDefinitionOptions jobDefinitionOptions;
 
     // k8s 的 配置、flink 的配置  任务的配置、运行的配置
 

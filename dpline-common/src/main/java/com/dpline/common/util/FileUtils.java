@@ -199,6 +199,10 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
         return "";
     }
 
+    public static String concatPath(String directory, String jarName) {
+        return Paths.get(directory, jarName).toString();
+    }
+
 //    public static void main(String[] args) {
 //        writeContent2File("","/tmp/dpline/logs/9640278031136/deploy/10136815761696.log");
 //    }

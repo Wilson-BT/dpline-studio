@@ -51,7 +51,7 @@ public class YarnClientAddProcessor implements NettyRequestProcessor {
             return;
         }
         try {
-            hadoopManager.createHadoop(clientAddCommand.getClusterEntityId().toString(),clusterParams.getHadoopHome());
+            hadoopManager.createHadoop(clientAddCommand.getClusterEntityId(),clusterParams.getHadoopHome());
             channel.writeAndFlush(
                     new ClientAddResponseCommand(new ClusterResponse(ResponseStatus.SUCCESS))
                             .convert2Command(command.getOpaque()));

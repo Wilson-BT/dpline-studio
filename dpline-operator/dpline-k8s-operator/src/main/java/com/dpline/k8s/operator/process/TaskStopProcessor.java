@@ -2,6 +2,7 @@ package com.dpline.k8s.operator.process;
 
 import com.dpline.common.enums.OperationsEnum;
 import com.dpline.common.util.ExceptionUtil;
+import com.dpline.operator.processor.MDCEnvSideCar;
 import com.dpline.remote.command.Command;
 import com.dpline.remote.command.CommandType;
 import com.dpline.remote.command.TaskStopCommand;

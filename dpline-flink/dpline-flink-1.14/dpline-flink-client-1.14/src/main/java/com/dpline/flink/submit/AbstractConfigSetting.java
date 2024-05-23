@@ -2,6 +2,8 @@ package com.dpline.flink.submit;
 
 import com.dpline.common.params.RuntimeOptions;
 import com.dpline.common.request.FlinkK8sRemoteSubmitRequest;
+import com.dpline.common.request.FlinkRequest;
+import com.dpline.common.request.FlinkSubmitRequest;
 import com.dpline.common.util.Asserts;
 import com.dpline.common.util.StringUtils;
 import com.dpline.common.util.TaskPathResolver;
@@ -14,12 +16,12 @@ public abstract class AbstractConfigSetting {
 
     Configuration configuration;
 
-    private FlinkK8sRemoteSubmitRequest submitRequest;
+    private FlinkSubmitRequest submitRequest;
 
     /**
      * 通用配置 初始化 params > flinkYaml > flink-conf
      */
-    public Configuration setGlobalConfig(FlinkK8sRemoteSubmitRequest submitRequest) {
+    public Configuration setGlobalConfig(FlinkSubmitRequest submitRequest) {
         this.submitRequest = submitRequest;
         loadConfiguration();
         // 其他p运行设置参数
@@ -134,9 +136,8 @@ public abstract class AbstractConfigSetting {
      * 个性化参数设置
      *
      * @param configuration
-     * @param submitRequest
      */
-    public abstract void setSpecialConfig(Configuration configuration, FlinkK8sRemoteSubmitRequest submitRequest);
+    public abstract void setSpecialConfig(Configuration configuration, FlinkSubmitRequest flinkSubmitRequest);
 
 
 }

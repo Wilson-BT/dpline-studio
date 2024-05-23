@@ -216,7 +216,7 @@ CREATE TABLE `dpline_flink_session` (
                                         `checkpoint_options` varchar(12) DEFAULT NULL COMMENT 'checkpoint_options',
                                         `create_time` datetime DEFAULT NULL COMMENT 'create time',
                                         `update_time` datetime DEFAULT NULL COMMENT 'update time',
-                                        `k8s_cluster_id` varchar(200) DEFAULT NULL COMMENT 'kubernetes_cluster_id',
+                                        `application_id` varchar(200) DEFAULT NULL COMMENT 'k8s:cluster_id,yarn:application_id',
                                         `resource_ids` varchar(100) DEFAULT NULL COMMENT 'flink session dependence resources',
                                         `udf_ids` varchar(100) DEFAULT NULL COMMENT 'session dependence udfIds',
                                         PRIMARY KEY (`id`)

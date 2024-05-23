@@ -4,6 +4,7 @@ import com.dpline.common.enums.*;
 import com.dpline.common.params.JobConfig;
 import com.dpline.common.params.K8sClusterParams;
 import com.dpline.common.params.YarnClusterParams;
+import com.dpline.common.store.FsStore;
 import com.dpline.common.util.*;
 import com.dpline.console.service.ClusterService;
 import com.dpline.console.service.GenericService;
@@ -47,6 +48,9 @@ public class ClusterServiceImpl extends GenericService<Cluster, Long> implements
     @Autowired
     JobServiceImpl jobServiceImpl;
 
+    @Autowired
+    FsStore fsStore;
+
 
     @Override
     @Transactional
@@ -77,18 +81,19 @@ public class ClusterServiceImpl extends GenericService<Cluster, Long> implements
         try {
         // if create cluster success
             cluster.setId(CodeGenerateUtils.getInstance().genCode());
-//            ClientAddCommand clientAddCommand = new ClientAddCommand(cluster.getId(),cluster.getClusterParams());
-//            // add new client to operator
-//            ClientAddResponseCommand clientAddResponseCommand =
-//                    (ClientAddResponseCommand) nettyClientService.sendCommand(
-//                                        clusterType,
-//                                        clientAddCommand,
-//                                        ClientAddResponseCommand.class);
-//            if (Asserts.isNull(clientAddResponseCommand)
-//                    || clientAddResponseCommand.getClusterResponse().getResponseStatus().equals(ResponseStatus.FAIL)) {
-//                putMsg(result, Status.CLUSTER_CREATE_ERROR);
-//                return result;
-//            }
+            // 将所有文件上传到hdfs
+            ClientAddCommand clientAddCommand = new ClientAddCommand(cluster.getId(),cluster.getClusterParams());
+            // add new client to operator
+            ClientAddResponseCommand clientAddResponseCommand =
+                    (ClientAddResponseCommand) nettyClientService.sendCommand(
+                                        clusterType,
+                                        clientAddCommand,
+                                        ClientAddResponseCommand.class);
+            if (Asserts.isNull(clientAddResponseCommand)
+                    || clientAddResponseCommand.getClusterResponse().getResponseStatus().equals(ResponseStatus.FAIL)) {
+                putMsg(result, Status.CLUSTER_CREATE_ERROR);
+                return result;
+            }
             insert(cluster);
             return result.ok();
         } catch (CodeGenerateUtils.CodeGenerateException e) {

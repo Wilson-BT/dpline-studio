@@ -1,11 +1,19 @@
 package com.dpline.console.handler;
 
-import com.dpline.dao.dto.JobDto;
 import com.dpline.dao.entity.Job;
+
+import java.io.IOException;
 
 public interface DeployHandler {
 
-    String deploy(JobDto jobDto);
+    public static final String MAIN_FLAG = "Main";
 
-    void clear(Job job);
+    public static final String EXTEND_FLAG = "Extend";
+
+    public static final String SQL_FLAG = "Sql";
+
+
+    boolean deploy(Job job) throws Exception;
+
+    void clear(Job job) throws IOException;
 }

@@ -35,7 +35,7 @@ public class YarnClientUpdateProcessor implements NettyRequestProcessor {
         try {
             YarnClusterParams oldYarnClusterParams = JSONUtils.parseObject(clientUpdateCommand.getOldClusterParamsContent(), YarnClusterParams.class);
 //            YarnClusterParams newYarnClusterParams = JSONUtils.parseObject(clientUpdateCommand.getNewClusterParamsContent(), YarnClusterParams.class);
-            hadoopManager.updateHadoop(clientUpdateCommand.getClusterEntityId().toString(),oldYarnClusterParams.getHadoopHome());
+            hadoopManager.updateHadoop(clientUpdateCommand.getClusterEntityId(),oldYarnClusterParams.getHadoopHome());
             channel.writeAndFlush(
                     new ClientUpdateResponseCommand(
                             ResponseStatus.SUCCESS,

@@ -1,6 +1,7 @@
 package com.dpline.console.service;
 
 import com.dpline.common.enums.ClusterType;
+import com.dpline.common.util.ExceptionUtil;
 import com.dpline.common.util.JSONUtils;
 import com.dpline.remote.NettyRemoteClient;
 import com.dpline.remote.command.AbstractOperatorCommand;
@@ -70,7 +71,7 @@ public class NettyClientService {
             Command receivedCommand = this.client.sendSync(address, sendCommand, REQUEST_TIMEOUT);
             return JSONUtils.parseObject(receivedCommand.getBody(), clazz);
         } catch (Exception e) {
-            logger.error("sync alert send error", e);
+            logger.error("sync alert send error", ExceptionUtil.exceptionToString(e));
         } finally {
             logger.info("netty request over.");
         }

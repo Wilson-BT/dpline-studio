@@ -1,4 +1,4 @@
-package com.dpline.k8s.operator.entry;
+package com.dpline.operator.entity;
 
 import lombok.Data;
 import org.jetbrains.annotations.NotNull;
@@ -7,21 +7,28 @@ import java.util.concurrent.Delayed;
 import java.util.concurrent.TimeUnit;
 
 
-/**
- * 每个namespace 下有多少cluster
- */
+
 @Data
 public class SniffEvent implements Delayed {
 
-    Long clusterEntityId;
+    /**
+     * clusterEntityId
+     */
+    Long clusterId;
 
-    String clusterId;
+    /**
+     * applicationSessionId
+     */
+    String applicationId;
 
+    /**
+     * expire time
+     */
     Long expireTime;
 
-    public SniffEvent(Long clusterEntityId, String clusterId) {
-        this.clusterEntityId = clusterEntityId;
+    public SniffEvent(Long clusterId, String applicationId) {
         this.clusterId = clusterId;
+        this.applicationId = applicationId;
     }
 
     public void resetExpireTime(long delayTime, TimeUnit delayTimeUnit){

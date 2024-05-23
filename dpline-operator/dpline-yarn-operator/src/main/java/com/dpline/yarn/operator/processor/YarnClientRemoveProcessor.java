@@ -31,7 +31,7 @@ public class YarnClientRemoveProcessor implements NettyRequestProcessor {
         ClientDelCommand clientDelCommand = JSONUtils.parseObject(command.getBody(), ClientDelCommand.class);
         logger.info("yarn remove client command had received.{}",clientDelCommand);
         try {
-            hadoopManager.closeHadoop(clientDelCommand.getClusterId().toString());
+            hadoopManager.closeHadoop(clientDelCommand.getClusterId());
             channel.writeAndFlush(new ClientDelResponseCommand(new ClusterResponse(ResponseStatus.SUCCESS))
                     .convert2Command(command.getOpaque()));
         } catch (Exception exception){

@@ -38,7 +38,7 @@ public class TaskPathResolver {
 
     private final static String RUN_JAR_PREFIX = "local:///opt/flink/main/%s";
 
-    public static final String SAVEPOINT_DIR_FORMAT = "%s/%s";
+    public static final String SAVEPOINT_DIR_FORMAT = "%s%s";
 
 
     public static final String DATA_BASEDIR = pathDelimiterResolve(CommonProperties.getDataBasedirPath());
@@ -113,23 +113,23 @@ public class TaskPathResolver {
      * @return
      */
     public static String getTaskRemoteDeployDir(long projectId, long jobId) {
-        return String.format("/task/%s/%s", projectId, jobId);
+        return String.format("/dpline/task/%s/%s", projectId, jobId);
     }
 
     public static String getTaskRemoteHaDir(String jobName){
-        return String.format("/ha/%s",jobName);
+        return String.format("/dpline/ha/%s",jobName);
     }
 
     public static String getJobDefaultCheckPointDir(long projectId, long jobId, String runJobId) {
-        return getJobDefaultCheckPointDir(projectId,jobId) + "/" + runJobId;
+        return getJobDefaultCheckPointDir(projectId,jobId) + DIVISION_STRING + runJobId;
     }
 
     public static String getJobDefaultCheckPointDir(long projectId, long jobId) {
-        return String.format("/checkpoint/%s/%s", projectId, jobId);
+        return String.format("/dpline/checkpoint/%s/%s", projectId, jobId);
     }
 
     public static String getJobDefaultSavePointDir(long projectId, long jobId,String runJobId) {
-        return String.format("/savepoint/%s/%s/%s", projectId, jobId, runJobId);
+        return String.format("/dpline/savepoint/%s/%s/%s", projectId, jobId, runJobId);
     }
 
 
@@ -156,7 +156,14 @@ public class TaskPathResolver {
 //        return String.format("http://%s/%s", CommonProperties.getMotorMonitorWebHost(), getServiceName(clusterId));
 //    }
 
-    public static String getNewRestUrlPath(String namespace,String ingressHost,String clusterId) {
+    public static String getRestUrlPath(String namespace,String ingressHost,String clusterId) {
+        if (StringUtils.isEmpty(clusterId)) {
+            return "";
+        }
+        return String.format("http://%s/%s/%s", ingressHost, namespace, clusterId);
+    }
+
+    private static String getK8sRestUrlPath(String namespace,String ingressHost,String clusterId) {
         if (StringUtils.isEmpty(clusterId)) {
             return "";
         }
@@ -171,30 +178,14 @@ public class TaskPathResolver {
      * @param runJobId
      * @return
      */
-    public static String getWebViewUrl(String namespace,String ingressHost,String clusterId,String runJobId) {
+    public static String jobOverViewUrl(String namespace,String ingressHost,String clusterId,String runJobId) {
         if (StringUtils.isEmpty(clusterId)) {
             return "";
         }
         return String.format("http://%s/%s/%s/#/job/%s/overview", ingressHost, namespace, clusterId, runJobId);
     }
 
-//    public static String getSessionJarRunPath(String nameSpace,String sessionName,String jarId){
-//        String restUrlPath = TaskPathResolver.getNewRestUrlPath(nameSpace, sessionName);
-//        return String.format("%s/jars/%s/run", restUrlPath,jarId);
-//    }
 
-//
-//    public static String getRestUploadPath(String nameSpace,String clusterId){
-//        return getNewRestUrlPath(nameSpace,clusterId) + "/jars/upload";
-//    }
-//
-//    public static String getRestJarGetPath(String nameSpace,String clusterId){
-//        return getNewRestUrlPath(nameSpace,clusterId) + "/jars";
-//    }
-//
-//    public static String getRestJarDeletePath(String nameSpace,String clusterId,String jarId){
-//        return String.format("{}/{}/jars",getNewRestUrlPath(nameSpace,clusterId),jarId);
-//    }
 
 
     public static String getServiceName(String clusterId) {
@@ -204,16 +195,6 @@ public class TaskPathResolver {
         return clusterId + "-rest";
     }
 
-//    /**
-//     * 如果是 application 模式，不管是Sql 还是 custom-code，
-//     *
-//     * @param localJarPath
-//     * @return
-//     */
-//    public static String getAppModeRunJarPath(String localJarPath){
-//        return String.format("local://opt/flink/main-file/%s",
-//            localJarPath.substring(localJarPath.lastIndexOf("/") + 1));
-//    }
 
 
     public static String getJobLogPath(String deployType, String jobId,String traceId) {

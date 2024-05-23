@@ -4,6 +4,7 @@ import com.dpline.common.enums.ClusterType;
 import com.dpline.common.enums.OperationsEnum;
 import com.dpline.common.request.FlinkK8sRemoteSubmitRequest;
 import com.dpline.common.util.ExceptionUtil;
+import com.dpline.operator.processor.MDCEnvSideCar;
 import com.google.common.base.Preconditions;
 import com.dpline.common.request.SubmitResponse;
 import com.dpline.common.util.Asserts;

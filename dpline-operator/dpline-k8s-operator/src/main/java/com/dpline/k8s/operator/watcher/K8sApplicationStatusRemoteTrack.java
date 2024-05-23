@@ -2,7 +2,7 @@ package com.dpline.k8s.operator.watcher;
 
 import com.dpline.common.enums.ExecStatus;
 import com.dpline.k8s.operator.job.ClusterFlushEntity;
-import com.dpline.k8s.operator.job.TaskFlushEntity;
+import com.dpline.operator.entity.TaskFlushEntity;
 import com.dpline.k8s.operator.k8s.K8sClusterManager;
 import io.fabric8.kubernetes.api.model.ContainerStatus;
 import org.slf4j.Logger;

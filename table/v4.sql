@@ -189,7 +189,7 @@ CREATE TABLE `dpline_file_tag` (
 -- ----------------------------
 DROP TABLE IF EXISTS `dpline_flink_session`;
 CREATE TABLE `dpline_flink_session` (
-                                        `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'id',
+                                        `id` bigint NOT NULL COMMENT 'id',
                                         `flink_session_name` varchar(64) DEFAULT NULL COMMENT 'flink session name',
                                         `description` varchar(255) DEFAULT NULL,
                                         `user_id` int(11) DEFAULT NULL COMMENT 'user id',
@@ -204,7 +204,8 @@ CREATE TABLE `dpline_flink_session` (
                                         `checkpoint_options` varchar(12) DEFAULT NULL COMMENT 'checkpoint_options',
                                         `create_time` datetime DEFAULT NULL COMMENT 'create time',
                                         `update_time` datetime DEFAULT NULL COMMENT 'update time',
-                                        `k8s_cluster_id` varchar(200) DEFAULT NULL COMMENT 'kubernetes_cluster_id',
+                                        `application_id` varchar(200) DEFAULT NULL COMMENT 'k8s:cluster_id,yarn:application_id',
+                                        `cluster_id` bigint NOT NULL COMMENT 'session dependence clusterId',
                                         `resource_ids` varchar(100) DEFAULT NULL COMMENT 'flink session dependence resources',
                                         `udf_ids` varchar(100) DEFAULT NULL COMMENT 'session dependence udfIds',
                                         PRIMARY KEY (`id`)
@@ -305,6 +306,7 @@ CREATE TABLE `dpline_job` (
                               `run_mode_type` varchar(50) DEFAULT NULL COMMENT 'run mode type',
                               `file_type` varchar(20) DEFAULT NULL COMMENT 'file type ds or sql',
                               `cluster_id` bigint(11) DEFAULT NULL COMMENT 'cluster id',
+                              `application_id` varchar(80) DEFAULT NULL COMMENT 'yarn:application id,k8s: clusterId(jobName) or sessionId(sessionName)',
                               `image_id` bigint(11) DEFAULT NULL COMMENT 'image id',
                               `runtime_options` text COMMENT 'run time options',
                               `other_runtime_config` text COMMENT 'other run time config',

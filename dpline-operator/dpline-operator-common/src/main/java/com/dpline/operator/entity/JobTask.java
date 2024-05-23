@@ -1,12 +1,11 @@
-package com.dpline.k8s.operator.job;
+package com.dpline.operator.entity;
 
 import com.dpline.common.enums.AlertMode;
 import com.dpline.common.enums.ExecStatus;
 import lombok.Data;
 
 @Data
-public class TaskFlushEntity {
-
+public class JobTask {
     private Long jobId;
 
     private String runJobId;
@@ -21,13 +20,13 @@ public class TaskFlushEntity {
 
     private Long currentTimeStamp;
 
-    public TaskFlushEntity(Long jobId,
-                           String taskName,
-                           Long currentTimeStamp,
-                           ExecStatus execStatus,
-                           AlertMode alertMode,
-                           Long alertInstanceId,
-                           String runJobId
+    public JobTask(Long jobId,
+                   String taskName,
+                   Long currentTimeStamp,
+                   ExecStatus execStatus,
+                   AlertMode alertMode,
+                   Long alertInstanceId,
+                   String runJobId
 
     ) {
         this.jobId = jobId;
@@ -40,6 +39,7 @@ public class TaskFlushEntity {
     }
 
 
-    public TaskFlushEntity() {
+    public JobTask() {
     }
+
 }

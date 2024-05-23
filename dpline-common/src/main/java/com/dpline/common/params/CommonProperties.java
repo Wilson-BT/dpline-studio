@@ -6,6 +6,7 @@ import com.dpline.common.enums.ResFsType;
 import com.dpline.common.enums.ResUploadType;
 import com.dpline.common.util.PropertyUtils;
 import com.dpline.common.util.StringUtils;
+import com.dpline.common.util.TaskPathResolver;
 import lombok.Data;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -41,7 +42,7 @@ public class CommonProperties {
 
 
     public static String getDefaultFS() {
-        return PropertyUtils.getProperty(Constants.FS_DEFAULTFS);
+        return pathDelimiterResolve(PropertyUtils.getProperty(Constants.FS_DEFAULTFS));
     }
 
     public static String getDataBasedirPath() {

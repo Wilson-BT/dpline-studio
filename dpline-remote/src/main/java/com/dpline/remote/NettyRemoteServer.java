@@ -120,15 +120,17 @@ public class NettyRemoteServer {
             ChannelFuture future;
             try {
                 future = serverBootstrap.bind(serverConfig.getListenPort(clusterType)).sync();
-            } catch (Exception e) {
-                logger.error("NettyRemoteServer bind fail {}, exit", e.getMessage(), e);
-                throw new RemoteException(String.format(NETTY_BIND_FAILURE_MSG, serverConfig.getListenPort(clusterType)));
-            }
-            if (future.isSuccess()) {
                 logger.info("NettyRemoteServer bind success at port : {}", serverConfig.getListenPort(clusterType));
-            } else if (future.cause() != null) {
-                throw new RemoteException(String.format(NETTY_BIND_FAILURE_MSG, serverConfig.getListenPort(clusterType)), future.cause());
-            } else {
+                if (future.isSuccess()) {
+                    future.channel().closeFuture().sync();
+                } else if (future.cause() != null) {
+                    throw new RemoteException(String.format(NETTY_BIND_FAILURE_MSG, serverConfig.getListenPort(clusterType)), future.cause());
+                } else {
+                    throw new RemoteException(String.format(NETTY_BIND_FAILURE_MSG, serverConfig.getListenPort(clusterType)));
+                }
+            } catch (Exception e) {
+                close();
+                logger.error("NettyRemoteServer bind fail {}, exit", e.getMessage(), e);
                 throw new RemoteException(String.format(NETTY_BIND_FAILURE_MSG, serverConfig.getListenPort(clusterType)));
             }
         }

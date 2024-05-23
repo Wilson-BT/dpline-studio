@@ -26,6 +26,12 @@ public class TaskSubmitFunction extends TaskOperator {
             case LOCAL:
                 className = "com.dpline.flink.submit.LocalSubmitter";
                 break;
+            case YARN_APPLICATION:
+                className = "com.dpline.flink.submit.YarnApplicationSubmitter";
+                break;
+            case YARN_SESSION:
+                className = "com.dpline.flink.submit.YarnSessionSubmitter";
+                break;
             case K8S_SESSION:
                 className = "com.dpline.flink.submit.K8SSessionSubmitter";
                 break;

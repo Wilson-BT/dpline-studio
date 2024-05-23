@@ -2,10 +2,12 @@ package com.dpline.yarn.operator;
 
 
 import com.dpline.common.enums.ClusterType;
+import com.dpline.operator.processor.*;
 import com.dpline.remote.NettyRemoteServer;
 import com.dpline.remote.command.CommandType;
 import com.dpline.remote.config.NettyServerConfig;
 import com.dpline.yarn.operator.processor.*;
+import com.dpline.yarn.operator.watcher.TaskStatusManager;
 import org.mybatis.spring.annotation.MapperScan;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,14 +23,16 @@ import java.io.Closeable;
 
 @ComponentScan(value = {
         "com.dpline.yarn.operator",
+        "com.dpline.operator",
         "com.dpline.common",
         "com.dpline.alert",
         "com.dpline.dao"})
 @MapperScan(value = {"com.dpline.dao.mapper"})
 @EnableAutoConfiguration
 public class OperatorServer implements Closeable {
-
     NettyRemoteServer server;
+
+    TaskStatusManager taskStatusManager;
 
     private static final Logger logger = LoggerFactory.getLogger(OperatorServer.class);
 
@@ -36,7 +40,7 @@ public class OperatorServer implements Closeable {
         Thread.currentThread().setName("OperatorServer");
         new SpringApplicationBuilder(OperatorServer.class)
                 .web(WebApplicationType.NONE)
-                .profiles("operator")
+                .profiles("yarn-operator")
                 .run(args);
     }
 
@@ -51,7 +55,7 @@ public class OperatorServer implements Closeable {
         try {
             startServer();
             // 开启循环查询任务
-//            taskStatusManager.start();
+            taskStatusManager.start();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -60,7 +64,6 @@ public class OperatorServer implements Closeable {
     private void startServer() {
         NettyServerConfig serverConfig = new NettyServerConfig();
         server = new NettyRemoteServer(serverConfig);
-        server.start(ClusterType.YARN);
         server.registerProcessor(CommandType.PING, new TestPingProcessor());
         server.registerProcessor(CommandType.CLIENT_ADD_REQUEST, new YarnClientAddProcessor());
         server.registerProcessor(CommandType.CLIENT_REMOVE_REQUEST, new YarnClientRemoveProcessor());
@@ -69,13 +72,15 @@ public class OperatorServer implements Closeable {
         server.registerProcessor(CommandType.TASK_RUN_REQUEST, new TaskRunProcessor());
         server.registerProcessor(CommandType.TASK_STOP_REQUEST, new TaskStopProcessor());
         server.registerProcessor(CommandType.TASK_ALERT_EDIT_REQUEST, new TaskAlertEditProcessor());
-        logger.info("NettyServer is open.");
-        logger.info("Minio client is open.");
+        server.registerProcessor(CommandType.FILE_DAG_REQUEST,new FileDagProcessor());
+        server.start(ClusterType.YARN);
+        logger.info("NettyServer is opened.");
     }
 
     @PreDestroy
     @Override
     public void close() {
+        logger.info("NettyServer is closed.");
         server.close();
     }
 }

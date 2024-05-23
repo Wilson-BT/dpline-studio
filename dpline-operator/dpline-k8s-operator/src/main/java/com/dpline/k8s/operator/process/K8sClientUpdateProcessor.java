@@ -5,7 +5,7 @@ import com.dpline.common.params.K8sClusterParams;
 import com.dpline.common.util.ExceptionUtil;
 import com.dpline.common.util.JSONUtils;
 import com.dpline.dao.mapper.ClusterMapper;
-import com.dpline.k8s.operator.config.WatcherConfig;
+import com.dpline.operator.common.WatcherConfig;
 import com.dpline.k8s.operator.k8s.K8sClientLoopList;
 import com.dpline.k8s.operator.k8s.K8sClusterManager;
 import com.dpline.remote.command.*;

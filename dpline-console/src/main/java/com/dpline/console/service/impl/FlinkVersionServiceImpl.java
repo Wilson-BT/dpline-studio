@@ -1,31 +1,39 @@
 package com.dpline.console.service.impl;
 
+import com.dpline.common.Constants;
 import com.dpline.common.enums.Status;
 import com.dpline.common.params.CommonProperties;
 import com.dpline.common.params.JobConfig;
 import com.dpline.common.store.FsStore;
-import com.dpline.common.util.Asserts;
-import com.dpline.common.util.FlinkUtils;
-import com.dpline.common.util.Result;
-import com.dpline.common.util.StringUtils;
+import com.dpline.common.util.*;
 import com.dpline.console.service.FlinkVersionService;
 import com.dpline.console.service.GenericService;
 import com.dpline.dao.entity.FlinkVersion;
 import com.dpline.dao.generic.Pagination;
 import com.dpline.dao.mapper.FlinkVersionMapper;
 import com.dpline.dao.rto.FlinkVersionRto;
+import org.apache.hadoop.fs.FileStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class FlinkVersionServiceImpl extends GenericService<FlinkVersion, Long> implements FlinkVersionService {
 
+    @Autowired
+    FsStore fsStore;
+
     private static final Logger logger = LoggerFactory.getLogger(FlinkVersionServiceImpl.class);
+
+    private final static String FLINK_REMOTE_FS_PATH = "/dpline/upload/flink/%s/%s";
 
     public FlinkVersionServiceImpl(@Autowired FlinkVersionMapper flinkVersionMapper) {
         super(flinkVersionMapper);
@@ -55,13 +63,80 @@ public class FlinkVersionServiceImpl extends GenericService<FlinkVersion, Long> 
             putMsg(result, Status.FLINK_REAL_VERSION_NOT_EXISTS);
             return result;
         }
+        // 将hadoopHome路径上传到hdfs
+        uploadAllJarsToHdfs(flinkVersion.getFlinkPath(),flinkVersion.getRealVersion());
         return result.setData(insert(flinkVersion)).ok();
+    }
+
+    /**
+     * copy all files to hdfs
+     * @param flinkPath
+     */
+    private void uploadAllJarsToHdfs(String flinkPath,String flinkRealVersion) {
+        copyAllFilesToHdfs(TaskPathResolver.pathDelimiterResolve(flinkPath) + "/libs",String.format(FLINK_REMOTE_FS_PATH,flinkRealVersion,"libs"));
+        copyAllFilesToHdfs(TaskPathResolver.pathDelimiterResolve(flinkPath) + "/plugins",String.format(FLINK_REMOTE_FS_PATH,flinkRealVersion,"plugins"));
+        copyAllFilesToHdfs(TaskPathResolver.pathDelimiterResolve(flinkPath) + "/opt",String.format(FLINK_REMOTE_FS_PATH,flinkRealVersion,"opt"));
+    }
+
+    private void copyAllFilesToHdfs(String localPath, String remotePath) {
+        try {
+            if(fsStore.exists(remotePath)){
+                fsStore.delete(remotePath,true);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        File[] files = FileUtils.listFiles(localPath);
+        Arrays.stream(files).forEach(file -> {
+            try {
+                // 如果是目录，
+                if(file.isDirectory()){
+                    copyAllFilesToHdfs(file.getAbsolutePath(), remotePath + Constants.DIVISION_STRING + file.getName());
+                } else {
+                    fsStore.upload(file.getAbsolutePath(),
+                            TaskPathResolver.pathDelimiterResolve(remotePath) + Constants.DIVISION_STRING + file.getName(),
+                            true,true);
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
+
     }
 
     @Override
     public int delete(FlinkVersion flinkVersion) {
         int deleteFlag = delete(flinkVersion.getId());
+        try {
+            fsStore.delete(String.format(FLINK_REMOTE_FS_PATH,flinkVersion.getRealVersion(),""),true);
+        } catch (IOException e) {
+            logger.error("Delete remote Flink path [{}] error.",String.format(FLINK_REMOTE_FS_PATH,flinkVersion.getRealVersion(),""));
+            throw new RuntimeException(e);
+        }
         return deleteFlag;
+    }
+
+    public String getLibRemotePath(String flinkVersion){
+        return String.format(FLINK_REMOTE_FS_PATH,flinkVersion,"libs");
+    }
+
+    public String getPluginsRemotePath(String flinkVersion){
+        return String.format(FLINK_REMOTE_FS_PATH,flinkVersion,"plugins");
+    }
+
+    public String getOptRemotePath(String flinkVersion){
+        return String.format(FLINK_REMOTE_FS_PATH,flinkVersion,"opt");
+    }
+
+    public String getFlinkDistRemoteFsPath(String flinkVersion){
+        try {
+            String libPath = String.format(FLINK_REMOTE_FS_PATH, flinkVersion, "lib");
+            List<FileStatus> opt = fsStore.listAllFiles(libPath,true);
+            Optional<FileStatus> dist = opt.stream().filter(fileStatus -> fileStatus.getPath().getName().contains("dist")).findFirst();
+            return dist.get().getPath().toString();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override

@@ -26,6 +26,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -43,7 +45,7 @@ public class JarFileServiceImpl extends GenericService<JarFile, Long> {
     private Pattern pattern = Pattern.compile("([A-Za-z0-9_\\-.)(])+");
     // upload/jar/public/主资源ID/jarId/jarName
     //           /projectId/主资源ID/jarId/jarName
-    private static String UPLOAD_PATH = "/upload/jar/{0}/{1}/{2}/{3}";
+    private static String UPLOAD_PATH = "/dpline/upload/jar/{0}/{1}/{2}/{3}";
 
     private static String TMP_PATH = "/tmp/dpline/{0}";
 
@@ -392,7 +394,8 @@ public class JarFileServiceImpl extends GenericService<JarFile, Long> {
         }
         // 需要知道是否已经被绑定了，
         try {
-            fsStore.delete(jarFile.getJarPath(),false);
+            Path parent = Paths.get(jarFile.getJarPath()).getParent();
+            fsStore.delete(parent.toString(),true);
             result.setData(this.getMapper().deleteById(jarFileDto.getId())).ok();
             return result;
         } catch (Exception e) {

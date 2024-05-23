@@ -5,7 +5,7 @@
         ${alias}.id,${alias}.flink_session_name,${alias}.description,${alias}.user_id,
         ${alias}.k8s_namespace_id,${alias}.taskmanager_num,${alias}.taskmanager_mem_size,${alias}.taskmanager_cpu_num,
         ${alias}.taskmanager_slot_num,${alias}.jobmanager_process_size,${alias}.status,${alias}.restart_options,${alias}.checkpoint_options,
-        ${alias}.create_time,${alias}.update_time
+        ${alias}.cluster_id,${alias}.create_time,${alias}.update_time
     </sql>
     <select id="queryByk8sNameSpaceId" resultType="com.dpline.dao.entity.FlinkSession">
         select <include refid="baseSql"/> from dpline_flink_session where k8s_namespace_id=#{k8sNameSpaceId}
@@ -32,6 +32,7 @@
             on a.cluster_id = b.id
                 and a.status=1
                 and b.enabled_flag=1
+                and cluster_type=#{clusterType}
     </select>
 
 </mapper>

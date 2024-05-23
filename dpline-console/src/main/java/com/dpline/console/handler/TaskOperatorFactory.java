@@ -24,7 +24,7 @@ public class TaskOperatorFactory {
 
 //    private static Map<RunModeType, DeployHandler> deployExecutorMap = new HashMap<>();
 
-    private static Map<RunModeType,NewDeployHandler> deployHandlerMap = new HashMap<>();
+    private static Map<RunModeType, DeployHandler> deployHandlerMap = new HashMap<>();
 
 
 //    public DeployHandler getDeployExecutor(FileType taskType, RunModeType runModeType){
@@ -47,7 +47,7 @@ public class TaskOperatorFactory {
 //        }
 //    }
 
-    public NewDeployHandler getDeployHandler(RunModeType runModeType, AbstractDeployConfig deployConfig){
+    public DeployHandler getDeployHandler(RunModeType runModeType, AbstractDeployConfig deployConfig){
         if(deployHandlerMap.containsKey(runModeType)){
             return deployHandlerMap.get(runModeType);
         }
@@ -56,7 +56,7 @@ public class TaskOperatorFactory {
             case YARN_APPLICATION:
                 return deployHandlerMap.computeIfAbsent(runModeType,
                         (key) -> {
-                            return new NewApplicationDeployHandler(fsStore,deployConfig);
+                            return new ApplicationDeployHandler(fsStore,deployConfig);
                         });
             default:
                 return null;

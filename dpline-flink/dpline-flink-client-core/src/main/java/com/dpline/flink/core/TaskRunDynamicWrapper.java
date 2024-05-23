@@ -25,6 +25,7 @@ public class TaskRunDynamicWrapper {
      */
     public synchronized Response execute(FlinkRequest request) throws Exception {
         ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
+        // add all flink jars,create and set with a new ClassLoader
         ChildFirstClassLoader targetClassLoader = flinkVersionClassLoadUtil.getFlinkClientClassLoader(request);
         Thread.currentThread().setContextClassLoader(targetClassLoader);
         logger.info("Change classLoader...");

@@ -1,4 +1,4 @@
-package com.dpline.k8s.operator.job;
+package com.dpline.operator.common;
 
 import com.dpline.common.enums.ExecStatus;
 import org.slf4j.Logger;
@@ -57,6 +57,32 @@ public class TaskRestUrlStatusConvertor {
         logger.warn("Rest-url status is [{}]", taskRunStatus.name());
         return ExecStatus.NONE;
     }
+    public static ExecStatus yarnStatusConvertToLocal(String state){
+        YarnAppState yarnAppState = YarnAppState.of(state);
+        logger.info("Yarn application state is {}.", yarnAppState.name());
+        switch (yarnAppState){
+            // 如果是初始化或者创建完成，
+            case NEW:
+            case NEW_SAVING:
+            case ACCEPTED:
+            case SUBMITTED:
+                return ExecStatus.INITIALIZING;
+            case RUNNING:
+                return ExecStatus.RUNNING;
+            case FAILED:
+                return ExecStatus.FAILED;
+            case KILLED:
+                return ExecStatus.CANCELED;
+            case FINISHED:
+                return ExecStatus.FINISHED;
+            case OTHER:
+                return ExecStatus.NONE;
+        }
+        logger.warn("yarn-url status is [{}]", yarnAppState.name());
+        return ExecStatus.NONE;
+    }
+
+
     public enum RestRunStatus {
         INITIALIZING, CREATED, RUNNING, FAILING, FAILED, CANCELLING, CANCELED, FINISHED, RESTARTING, SUSPENDED, RECONCILING;
         public static Optional<RestRunStatus> of(String restStatus){
@@ -68,4 +94,29 @@ public class TaskRestUrlStatusConvertor {
             return Optional.empty();
         }
     }
+
+    public enum YarnAppState {
+        NEW,
+        NEW_SAVING,
+        SUBMITTED,
+        ACCEPTED,
+        RUNNING,
+        // FINAL_SAVING,
+        // FINISHING,
+        FINISHED,
+        FAILED,
+        // KILLING,
+        KILLED,
+        OTHER;
+        public static YarnAppState of(String name) {
+            for (YarnAppState yarnAppState : YarnAppState.values()) {
+                if (yarnAppState.name().equals(name)) {
+                    return yarnAppState;
+                }
+            }
+            return null;
+        }
+    }
+
+
 }

@@ -95,7 +95,7 @@
               <a-select-option v-for="(item,key) in runModeList"
                                :key="key"
                                :value="item.value">
-                <div class="justify-start">{{ item.value }}</div>
+                <div class="justify-start">{{ item.label }}</div>
                 <!--                     v-if="item.betaFlag == 1"></i></div>-->
               </a-select-option>
             </a-select>

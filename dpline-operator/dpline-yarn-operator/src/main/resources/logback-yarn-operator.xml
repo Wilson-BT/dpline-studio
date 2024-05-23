@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configuration scan="true" scanPeriod="60 seconds"> <!--debug="true" -->
+<configuration scan="true" scanPeriod="60 seconds" > <!--debug="true" -->
     <property name="log.base" value="${APP_HOME}/logs"/>
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
@@ -12,7 +12,7 @@
 
     <appender name="JOBLOGFILE" class="ch.qos.logback.classic.sift.SiftingAppender">
         <filter class="com.dpline.common.log.JobLogFilter">
-            <level>INFO</level>
+            <level>DEBUG</level>
         </filter>
         <discriminator class="com.dpline.common.log.JobLogDiscriminator">
             <key>taskAppId</key>
@@ -33,7 +33,7 @@
 <!--                    converterClass="com.handsome.common.log.SensitiveDataConverter"/>-->
     <!-- master server logback config start -->
     <appender name="WATCHERLOGFILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${log.base}/dpline-watcher.log</file>
+        <file>${log.base}/dpline-yarn-watcher.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
             <fileNamePattern>${log.base}/dpline-yarn-watcher.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
             <maxHistory>30</maxHistory>
@@ -48,7 +48,7 @@
     </appender>
     <!-- master server logback config end -->
 
-    <root level="INFO">
+    <root level="DEBUG">
         <appender-ref ref="STDOUT"/>
         <appender-ref ref="JOBLOGFILE"/>
         <appender-ref ref="WATCHERLOGFILE"/>

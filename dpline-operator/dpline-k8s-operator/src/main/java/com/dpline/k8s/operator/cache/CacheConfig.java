@@ -1,7 +1,7 @@
 package com.dpline.k8s.operator.cache;
 
 import com.dpline.k8s.operator.job.ClusterFlushEntity;
-import com.dpline.k8s.operator.config.WatcherConfig;
+import com.dpline.operator.common.WatcherConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CachingConfigurerSupport;
 import org.springframework.cache.interceptor.KeyGenerator;

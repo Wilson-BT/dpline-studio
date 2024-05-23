@@ -24,5 +24,5 @@ public interface FlinkSessionMapper extends BaseMapper<FlinkSession> {
             @Param("flinkSessionName") String flinkSessionName);
 
 
-    List<FlinkSession> queryAllOnlineFlinkSession();
+    List<FlinkSession> queryAllOnlineFlinkSession(@Param("clusterType") String clusterType);
 }

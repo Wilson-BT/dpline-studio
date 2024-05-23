@@ -6,6 +6,7 @@ import com.dpline.common.enums.RunModeType;
 import com.dpline.common.util.Asserts;
 import com.dpline.k8s.operator.job.ClusterFlushEntity;
 import com.dpline.k8s.operator.k8s.K8sClusterManager;
+import com.dpline.operator.common.RemoteType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,7 +73,7 @@ public class TaskStatusRemoteProxy implements StatusTrack {
      * @return
      */
     private StatusTrack getOrCreateStatusTrack(RunModeType runModeType, RemoteType remoteType) {
-        String key = runModeType.getValue() + "_" + remoteType.key;
+        String key = runModeType.getValue() + "_" + remoteType.getKey();
         if (runModeStatusTrackMap.containsKey(key)) {
             return runModeStatusTrackMap.get(key);
         }
@@ -88,29 +89,6 @@ public class TaskStatusRemoteProxy implements StatusTrack {
                 new K8sSessionStatusRemoteTrack(k8sClusterManager));
         }
         return runModeStatusTrackMap.get(key);
-    }
-
-
-    public enum RemoteType {
-        REST(0, "rest"),
-        K8S(1, "k8s");
-        private int key;
-        private String type;
-
-        RemoteType(int key, String type) {
-            this.key = key;
-            this.type = type;
-        }
-
-        public Optional<RemoteType> of(String type) {
-            for (RemoteType remoteType : RemoteType.values()) {
-                if (remoteType.type.equals(type)) {
-                    return Optional.of(remoteType);
-                }
-            }
-            return Optional.empty();
-        }
-
     }
 
 

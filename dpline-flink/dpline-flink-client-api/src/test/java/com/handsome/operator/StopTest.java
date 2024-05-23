@@ -24,8 +24,8 @@ public class StopTest {
         stopRequest.setClusterId("flink-sync-database-retail-pos");
         stopRequest.setWithSavePointAddress(false);
         stopRequest.setRunModeType(RunModeType.K8S_APPLICATION);
-        stopRequest.setKubePath("/Users/wangchunshun/.kube/config");
-        stopRequest.setNameSpace("ts-flink-prd");
+//        stopRequest.setKubePath("/Users/wangchunshun/.kube/config");
+//        stopRequest.setNameSpace("ts-flink-prd");
         FlinkHomeOptions flinkHomeOptions = new FlinkHomeOptions();
         flinkHomeOptions.setFlinkPath("/Users/wangchunshun/Documents/IdeaProjects/flink-1.14.5");
         flinkHomeOptions.setRealVersion("1.14.5");
