@@ -19,7 +19,6 @@ public class CommonConnectionParam implements ConnectionParam {
 
     protected String address;
 
-
     protected String database;
 
     protected String dataSourceUrl;

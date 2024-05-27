@@ -10,7 +10,7 @@ import java.util.List;
 
 
 public interface FsStore {
-    boolean WINDOWS =
+    public boolean WINDOWS =
             System.getProperty("os.name").startsWith("Windows");
 
 

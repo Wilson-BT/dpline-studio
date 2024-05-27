@@ -4,6 +4,8 @@ package com.dpline.common.params;
 import com.dpline.common.Constants;
 import com.dpline.common.enums.ResFsType;
 import com.dpline.common.enums.ResUploadType;
+import com.dpline.common.store.FsStore;
+import com.dpline.common.util.FileUtils;
 import com.dpline.common.util.PropertyUtils;
 import com.dpline.common.util.StringUtils;
 import com.dpline.common.util.TaskPathResolver;
@@ -14,8 +16,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
-import static com.dpline.common.Constants.BLACK;
-import static com.dpline.common.Constants.DIVISION_STRING;
+import static com.dpline.common.Constants.*;
 
 
 @Component
@@ -68,7 +69,7 @@ public class CommonProperties {
 
 
     public static Integer getK8sOperatorListenPort() {
-        return PropertyUtils.getInt(YARN_OPERATOR_LISTEN_PORT,50055);
+        return PropertyUtils.getInt(K8S_OPERATOR_LISTEN_PORT,50055);
     }
 
     public static String getMonitorPrometheusUrl(String defaultValue) {
@@ -92,8 +93,12 @@ public class CommonProperties {
         if(StringUtils.isEmpty(path)){
             return BLACK;
         }
-        if(path.endsWith(DIVISION_STRING)){
-            path = path.substring(0,path.lastIndexOf(DIVISION_STRING));
+        if((FsStore.WINDOWS && path.endsWith(WINDOWS_DIVISION_STRING))){
+            return path.substring(0,path.lastIndexOf(WINDOWS_DIVISION_STRING));
+        }
+        if(!FsStore.WINDOWS && path.endsWith(DIVISION_STRING)){
+
+            return path.substring(0,path.lastIndexOf(DIVISION_STRING));
         }
         return path;
     }

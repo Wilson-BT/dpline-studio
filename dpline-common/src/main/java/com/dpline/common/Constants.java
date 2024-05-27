@@ -167,6 +167,7 @@ public final class Constants {
     public static final String ADD_STRING = "+";
     public static final String STAR = "*";
     public static final String DIVISION_STRING = "/";
+    public static final String WINDOWS_DIVISION_STRING = "\\";
     public static final String LEFT_BRACE_STRING = "(";
     public static final char P = 'P';
     public static final char N = 'N';

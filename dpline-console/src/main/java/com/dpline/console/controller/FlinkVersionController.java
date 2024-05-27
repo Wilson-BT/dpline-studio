@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping(value = "/system/motorVersion")
 public class FlinkVersionController {
 
-    private static final Logger logger = LoggerFactory.getLogger(FlinkVersionController.class);
 
     @Autowired
     private FlinkVersionService flinkVersionService;

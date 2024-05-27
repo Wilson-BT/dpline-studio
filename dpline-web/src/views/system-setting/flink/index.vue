@@ -48,7 +48,7 @@
                  @pageSizeChange="pageSizeChange">
         <template #enabledFlag="{record}">
           <span class="operation state" @click="updateState(record)">
-            {{ record.enabledFlag == 0 ? "未启用" : "已启用" }}
+            {{ convertStatus(record)}}
           </span>
         </template>
         <template #operation="{record}">
@@ -199,6 +199,14 @@
       created() {
 
       },
+      convertStatus(record){
+        if(record.enabledFlag === 0){
+            return "未启用";
+        } else if (record.enabledFlag === 1){
+            return "已启用";
+        }
+        return "初始中";
+      },
       reset () {
         this.$refs.searchAuto.defaultValue = null
         this.params.vo.flinkName = null
@@ -213,6 +221,10 @@
       async updateState(record) {
         if (record == null) {
           return
+        }
+        if (record.enabledFlag == 2){
+           this.$message.error({ content: '版本正在初始化中...', duration: 2 });
+           return
         }
         record.enabledFlag == 0 ? record.enabledFlag = 1 : record.enabledFlag = 0;
         let res = await this.$http.post('/system/motorVersion/updateState', record)

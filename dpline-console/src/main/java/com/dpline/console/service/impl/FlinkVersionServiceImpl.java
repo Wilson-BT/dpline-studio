@@ -1,6 +1,7 @@
 package com.dpline.console.service.impl;
 
 import com.dpline.common.Constants;
+import com.dpline.common.enums.Flag;
 import com.dpline.common.enums.Status;
 import com.dpline.common.params.CommonProperties;
 import com.dpline.common.params.JobConfig;
@@ -20,9 +21,11 @@ import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 @Service
@@ -48,7 +51,6 @@ public class FlinkVersionServiceImpl extends GenericService<FlinkVersion, Long> 
     public Result<Object> create(FlinkVersion flinkVersion) {
         Result<Object> result = new Result<>();
         if(StringUtils.isBlank(flinkVersion.getRealVersion())){
-            // 从路径中获取 版本信息
             putMsg(result, Status.FLINK_REAL_VERSION_NOT_EXISTS);
             return result;
         }
@@ -63,8 +65,17 @@ public class FlinkVersionServiceImpl extends GenericService<FlinkVersion, Long> 
             putMsg(result, Status.FLINK_REAL_VERSION_NOT_EXISTS);
             return result;
         }
-        // 将hadoopHome路径上传到hdfs
-        uploadAllJarsToHdfs(flinkVersion.getFlinkPath(),flinkVersion.getRealVersion());
+        CompletableFuture.runAsync(() -> {
+            uploadAllJarsToHdfs(TaskPathResolver.pathDelimiterResolve(flinkVersion.getFlinkPath()),flinkVersion.getRealVersion());
+        }).exceptionally(ex -> {
+            logger.error("Flink version [{}] upload error.", realVersionFromFlinkHome);
+            return null;
+        }).thenRun(() -> {
+            logger.info("Flink version [{}] upload success.", realVersionFromFlinkHome);
+            flinkVersion.setEnabledFlag(Flag.YES.getCode());
+            update(flinkVersion);
+        });
+        flinkVersion.setEnabledFlag(Flag.MID.getCode());
         return result.setData(insert(flinkVersion)).ok();
     }
 
@@ -73,9 +84,9 @@ public class FlinkVersionServiceImpl extends GenericService<FlinkVersion, Long> 
      * @param flinkPath
      */
     private void uploadAllJarsToHdfs(String flinkPath,String flinkRealVersion) {
-        copyAllFilesToHdfs(TaskPathResolver.pathDelimiterResolve(flinkPath) + "/libs",String.format(FLINK_REMOTE_FS_PATH,flinkRealVersion,"libs"));
-        copyAllFilesToHdfs(TaskPathResolver.pathDelimiterResolve(flinkPath) + "/plugins",String.format(FLINK_REMOTE_FS_PATH,flinkRealVersion,"plugins"));
-        copyAllFilesToHdfs(TaskPathResolver.pathDelimiterResolve(flinkPath) + "/opt",String.format(FLINK_REMOTE_FS_PATH,flinkRealVersion,"opt"));
+        copyAllFilesToHdfs(FileUtils.concatPath(flinkPath,"lib"),String.format(FLINK_REMOTE_FS_PATH,flinkRealVersion,"lib"));
+        copyAllFilesToHdfs(FileUtils.concatPath(flinkPath ,"plugins"),String.format(FLINK_REMOTE_FS_PATH,flinkRealVersion,"plugins"));
+        copyAllFilesToHdfs(FileUtils.concatPath(flinkPath ,"opt"),String.format(FLINK_REMOTE_FS_PATH,flinkRealVersion,"opt"));
     }
 
     private void copyAllFilesToHdfs(String localPath, String remotePath) {
@@ -95,7 +106,7 @@ public class FlinkVersionServiceImpl extends GenericService<FlinkVersion, Long> 
                 } else {
                     fsStore.upload(file.getAbsolutePath(),
                             TaskPathResolver.pathDelimiterResolve(remotePath) + Constants.DIVISION_STRING + file.getName(),
-                            true,true);
+                            false,true);
                 }
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -117,7 +128,7 @@ public class FlinkVersionServiceImpl extends GenericService<FlinkVersion, Long> 
     }
 
     public String getLibRemotePath(String flinkVersion){
-        return String.format(FLINK_REMOTE_FS_PATH,flinkVersion,"libs");
+        return String.format(FLINK_REMOTE_FS_PATH,flinkVersion,"lib");
     }
 
     public String getPluginsRemotePath(String flinkVersion){

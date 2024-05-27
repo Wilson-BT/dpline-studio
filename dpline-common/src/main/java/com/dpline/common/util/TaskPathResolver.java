@@ -20,21 +20,25 @@ public class TaskPathResolver {
 
     public static final String MAIN_FILE_PATH = "%s/main";
 
+    public static final String MAIN_FILE_FLAG = "main";
+
     public static final String REMOTE_MNT_PATH = "%s/%s";
+
+    public static final String EXTENDED_FLAG = "extended";
 
     public static final String EXTENDED_FILE_PATH = "%s/extended";
 
     public static final String SQL_FILE_PATH = "%s/sql";
 
-    private static final String LOCAL_FLINK_CLIENT = "%s/lib";
+    public static final String SQL_FLAG = "sql";
 
-    private static final String LOCAL_FLINK_CONF = "%s/conf";
+    private static final String LOCAL_FLINK_CONF = "conf";
 
-    private static final String LOCAL_FLINK_OPT = "%s/opt";
+    private static final String LOCAL_FLINK_OPT = "opt";
 
-    private static final String LOCAL_FLINK_BIN_FLINK = "%s/bin/flink";
+    private static final String LOCAL_FLINK_BIN_FLINK = "bin/flink";
 
-    private static final String LOCAL_PROJECT_PATH = "%s/lib";
+    private static final String LIB_FLAG = "lib";
 
     private final static String RUN_JAR_PREFIX = "local:///opt/flink/main/%s";
 
@@ -58,26 +62,22 @@ public class TaskPathResolver {
         if (flinkVersionHomePath == null || flinkVersionHomePath.length() == 0) {
             return flinkVersionHomePath;
         }
-
-        if (flinkVersionHomePath.endsWith("/")) {
-            flinkVersionHomePath = flinkVersionHomePath.substring(0, flinkVersionHomePath.lastIndexOf("/"));
-        }
-        return String.format(LOCAL_FLINK_CLIENT, flinkVersionHomePath);
+        return FileUtils.concatPath(pathDelimiterResolve(flinkVersionHomePath), LIB_FLAG);
     }
     public static String getLocalFlinkOptPath(String flinkVersionHomePath) {
         if (flinkVersionHomePath == null || flinkVersionHomePath.length() == 0) {
             return flinkVersionHomePath;
         }
-        return String.format(LOCAL_FLINK_OPT, CommonProperties.pathDelimiterResolve(flinkVersionHomePath));
+        return FileUtils.concatPath(CommonProperties.pathDelimiterResolve(flinkVersionHomePath),LOCAL_FLINK_OPT);
     }
 
 
     public static String getLocalFlinkBinFlink(String flinkVersionHomePath){
-        return String.format(LOCAL_FLINK_BIN_FLINK,CommonProperties.pathDelimiterResolve(flinkVersionHomePath));
+        return FileUtils.concatPath(CommonProperties.pathDelimiterResolve(flinkVersionHomePath),LOCAL_FLINK_BIN_FLINK);
     }
 
     public static String getLocalFlinkConfPath(String flinkVersionHomePath){
-        return String.format(LOCAL_FLINK_CONF,CommonProperties.pathDelimiterResolve(flinkVersionHomePath));
+        return FileUtils.concatPath(CommonProperties.pathDelimiterResolve(flinkVersionHomePath),LOCAL_FLINK_CONF);
     }
 
     /**
@@ -91,7 +91,7 @@ public class TaskPathResolver {
             logger.error("APP_HOME not find, please check your sys env.");
             throw new IllegalArgumentException("APP_HOME not find.");
         }
-        return String.format(LOCAL_PROJECT_PATH, appHome);
+        return FileUtils.concatPath(appHome,LIB_FLAG);
     }
 
     /**
@@ -208,7 +208,7 @@ public class TaskPathResolver {
      * @return main 文件的位置
      */
     public static String mainFilePath(long projectId, long jobId){
-        return String.format(MAIN_FILE_PATH, getTaskLocalDeployDir(projectId,jobId));
+        return FileUtils.concatPath(getTaskLocalDeployDir(projectId,jobId),MAIN_FILE_FLAG);
     }
 
     public static String mainRemoteFilePath(long projectId, long jobId){
@@ -227,23 +227,14 @@ public class TaskPathResolver {
     }
 
     public static String pathDelimiterResolve(String path){
-        if(StringUtils.isEmpty(path)){
-            return BLACK;
-        }
-        if(path.endsWith(DIVISION_STRING)){
-            path = path.substring(0,path.lastIndexOf("/"));
-        }
-        return path;
+        return CommonProperties.pathDelimiterResolve(path);
     }
-
-
 
     /**
      * @return 扩展文件路径
      */
     public static String extendedFilePath(long projectId, long jobId){
-        return String.format(EXTENDED_FILE_PATH,
-            getTaskLocalDeployDir(projectId,jobId));
+        return FileUtils.concatPath(getTaskLocalDeployDir(projectId,jobId), EXTENDED_FLAG);
     }
 
     public static String extendedRemoteFilePath(long projectId, long jobId){
@@ -259,8 +250,7 @@ public class TaskPathResolver {
      * @return sql 文件路径
      */
     public static String sqlFilePath(long projectId, long jobId){
-        return String.format(SQL_FILE_PATH,
-            getTaskLocalDeployDir(projectId,jobId));
+        return FileUtils.concatPath(getTaskLocalDeployDir(projectId,jobId), SQL_FLAG);
     }
 
     /**

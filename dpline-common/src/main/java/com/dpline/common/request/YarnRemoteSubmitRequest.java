@@ -11,6 +11,8 @@ import lombok.Data;
 public class YarnRemoteSubmitRequest extends FlinkSubmitRequest {
 
     private YarnOptions yarnOptions;
+
+    public YarnRemoteSubmitRequest(){}
     public static YarnRemoteSubmitRequest.Builder builder(){
         return new YarnRemoteSubmitRequest.Builder();
     }

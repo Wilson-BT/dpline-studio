@@ -260,16 +260,16 @@ export default {
       },
       runClusterInfo: {
         clusterType: clusterTypeList[0].value,
-        clusterId: '',
+        clusterId: null,
         clusterName: ''
       },
       runImageInfo: {
-        imageId:'',
+        imageId: null,
         shortName: '',
         imageName: ''
       },
       motorVersion: {
-        motorId: '',
+        motorId: null,
         motorPath: '',
         motorRealVersion: ''
       },
@@ -452,9 +452,9 @@ export default {
         motorVersionId: this.motorVersion.motorId,
         appArgs: this.appArgs,
         otherRuntimeConfig: this.monacoInstance.getValue(),
-        clusterId: this.runClusterInfo.clusterId,
+        clusterId: Number(this.runClusterInfo.clusterId),
         fileType: this.fileType,
-        imageId: this.runImageInfo.imageId,
+        imageId: Number(this.runImageInfo.imageId),
         id: this.jobId,
         runModeType: this.runModeType,
         clusterType: this.runClusterInfo.clusterType,
