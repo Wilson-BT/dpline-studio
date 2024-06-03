@@ -67,7 +67,17 @@
             <artifactId>dpline-flink-log-kafka2doris-1.16</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.dpline</groupId>
+            <artifactId>dpline-flink-client-1.17</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
+        <dependency>
+            <groupId>com.dpline</groupId>
+            <artifactId>dpline-flink-log-kafka2doris-1.17</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <dependency>
             <groupId>com.dpline</groupId>
             <artifactId>dpline-web</artifactId>

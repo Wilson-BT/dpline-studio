@@ -3,6 +3,7 @@ package com.dpline.flink.log;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.doris.shaded.com.fasterxml.jackson.core.JsonParser;
 import org.apache.doris.shaded.com.fasterxml.jackson.core.type.TypeReference;
+import org.apache.doris.shaded.com.fasterxml.jackson.databind.*;
 import org.apache.doris.shaded.com.fasterxml.jackson.databind.node.ArrayNode;
 import org.apache.doris.shaded.com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.doris.shaded.com.fasterxml.jackson.databind.node.TextNode;
