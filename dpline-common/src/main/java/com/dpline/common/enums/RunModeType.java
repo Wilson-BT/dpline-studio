@@ -31,13 +31,13 @@ public enum RunModeType {
     /**
      * K8S_APPLICATION
      */
-    YARN_APPLICATION(1, "kubernetes-application",
+    YARN_APPLICATION(1, "yarn-application",
         ClusterType.YARN,
         RunMode.APPLICATION),
     /**
      * K8S_SESSION 模式
      */
-    YARN_SESSION(2, "kubernetes-session",
+    YARN_SESSION(2, "yarn-session",
         ClusterType.YARN,
         RunMode.SESSION),
 

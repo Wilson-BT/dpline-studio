@@ -66,7 +66,7 @@ public class HadoopUtil {
         if(!FileUtils.checkDirExist(configDir)){
             throw new FileNotFoundException(String.format("Directory %s do not exist", configDir));
         }
-        Arrays.stream(FileUtils.listFiles(configDir)).filter(file -> CONFIG_FILE_LIST.contains(file)).forEach(file -> {
+        Arrays.stream(FileUtils.listFiles(configDir)).filter(file -> CONFIG_FILE_LIST.contains(file.getName())).forEach(file -> {
             hadoopConfig.addResource(new Path(file.getAbsolutePath()));
         });
         if (StringUtils.isBlank(hadoopConfig.get("hadoop.tmp.dir"))) {

@@ -24,9 +24,12 @@ public class TaskOperateProxy {
         Response response = null;
         try {
             semaphore.acquire();
+//            response = new TaskRunDynamicWrapper(
+//                FlinkTaskOperateFactory.getInstance().getOperator(operationsEnum)
+//            ).execute(flinkRequest);
             response = new TaskRunDynamicWrapper(
-                FlinkTaskOperateFactory.getInstance().getOperator(operationsEnum)
-            ).execute(flinkRequest);
+                    FlinkTaskOperateFactory.getInstance().getOperator(operationsEnum)
+            ).executeTest(flinkRequest);
         } catch (Exception exception) {
             throw new RuntimeException(exception);
         } finally {

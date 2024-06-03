@@ -1,10 +1,6 @@
-package com.dpline.yarn.operator.util;
+package com.dpline.common.util;
 
 import com.dpline.common.Constants;
-import com.dpline.common.util.HadoopUtil;
-import com.dpline.common.util.HttpUtils;
-import com.dpline.common.util.StringUtils;
-import com.dpline.yarn.operator.HadoopManager;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeys;
 import org.apache.hadoop.net.NetUtils;
@@ -22,8 +18,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.net.*;
-import java.util.*;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -66,11 +68,11 @@ public class YarnUtil {
      * @param clusterId
      * @return
      */
-    public YarnApplicationState getState(String appId,Long clusterId) {
+    public YarnApplicationState getState(YarnClient yarnClient,String appId,Long clusterId) {
         ApplicationId applicationId = ApplicationId.fromString(appId);
         YarnApplicationState state = null;
         try {
-            YarnClient yarnClient = HadoopManager.getHadoop(clusterId).map(x -> x.getYarnClient()).orElse(null);
+//            YarnClient yarnClient = HadoopManager.getHadoop(clusterId).map(x -> x.getYarnClient()).orElse(null);
             YarnApplicationState reportState = yarnClient.getApplicationReport(applicationId).getYarnApplicationState();
             state = reportState;
         } catch (YarnException | IOException e) {
@@ -80,18 +82,17 @@ public class YarnUtil {
     }
 
 
-    public static void killApplication(String appId,Long clusterId) {
+    public static void killApplication(YarnClient yarnClient,String appId,Long clusterId) {
             ApplicationId applicationId = ApplicationId.fromString(appId);
             try {
-                YarnClient yarnClient = HadoopManager.getHadoop(clusterId).map(x -> x.getYarnClient()).orElse(null);
+//                YarnClient yarnClient = HadoopManager.getHadoop(clusterId).map(x -> x.getYarnClient()).orElse(null);
                 yarnClient.killApplication(applicationId);
             } catch (YarnException | IOException e) {
                 e.printStackTrace();
             }
     }
 
-    public static boolean isContains(String appName,Long clusterId) {
-        YarnClient yarnClient = HadoopManager.getHadoop(clusterId).map(x -> x.getYarnClient()).orElse(null);
+    public static boolean isContains(YarnClient yarnClient,String appName,Long clusterId) {
         EnumSet<YarnApplicationState> runningStates = EnumSet.of(YarnApplicationState.RUNNING);
         List<ApplicationReport> runningApps = null;
         try {

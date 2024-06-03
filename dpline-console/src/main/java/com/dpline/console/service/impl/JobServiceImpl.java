@@ -694,11 +694,18 @@ public class JobServiceImpl extends GenericService<Job, Long> {
             case REMOTE:
                 return Optional.empty();
             case YARN_APPLICATION:
+                YarnClusterParams yarnClusterParams = JSONUtils.parseObject(cluster.getClusterParams(), YarnClusterParams.class);
+                if (Asserts.isNull(yarnClusterParams)){
+                    putMsg(result,Status.CLUSTER_PARAMS_IS_EMPTY);
+                    return Optional.empty();
+                }
                 YarnOptions yarnOptions = YarnOptions.builder()
                         .flinkJarDirPath(Arrays.asList(flinkVersionServiceImpl.getLibRemotePath(flinkVersion.getRealVersion()),
                                 flinkVersionServiceImpl.getOptRemotePath(flinkVersion.getRealVersion()),
                                 flinkVersionServiceImpl.getPluginsRemotePath(flinkVersion.getRealVersion())))
                         .flinkDistJarPath(flinkVersionServiceImpl.getFlinkDistRemoteFsPath(flinkVersion.getRealVersion()))
+                        // 指定hadoop home
+                        .hadoopHome(yarnClusterParams.getHadoopHome())
                         .build();
                 String mainJarRemotePath = String.format("%s%s/%s", fsStore.getFileSystemPrefix(),
                                                TaskPathResolver.mainRemoteFilePath(job.getProjectId(), job.getId()),

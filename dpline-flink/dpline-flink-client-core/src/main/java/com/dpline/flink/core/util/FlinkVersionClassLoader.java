@@ -56,10 +56,10 @@ public class FlinkVersionClassLoader {
             String.format(FLINK_VERSION_CLIENT_JAR, getMajorVersion(realVersion)));
         // only one app flink client jar is here
         if (CollectionUtils.isEmpty(appFlinkClientJars) || appFlinkClientJars.size() != 1){
-            logger.error("AppFlinkClientJars.size() is {}",appFlinkClientJars);
-            throw new RuntimeException(String.format("AppFlinkClientJars.size() is [%d]",appFlinkClientJars.size()));
+            logger.error("App FlinkClientJars is empty");
+            throw new RuntimeException(String.format("App FlinkClientJars.size() is [%s]",appFlinkClientJars.size()));
         }
-        logger.info("Flink client jar has been find, [{}]",appFlinkClientJars.toString());
+        logger.info("Flink client jar has been find, [{}]", appFlinkClientJars);
         flinkHomeJars.addAll(appFlinkClientJars);
         // add connector and udf
         if(CollectionUtils.isNotEmpty(flinkRequest.getExtendedJarResources())){

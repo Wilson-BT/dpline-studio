@@ -492,7 +492,7 @@ public class FileServiceImpl extends GenericService<File, Long> {
             putMsg(result,Status.DATA_STREAM_CONFIG_NULL_ERROR);
             return result;
         }
-        // 如果dag 存在，且是一个 jar 包版本，则直接返回dag，否则需要重新计算dag
+        // 如果dag 存在，且是同一个 jar 包版本，则直接返回dag，否则需要重新计算dag
         // if dag exits,and as same as jar version, return dag,else reCalculate dag
         JarFile jarFile = jarFileServiceImpl.getMapper().findMainEffectJar(dataStreamConfig.getMainResourceId());
         if(Asserts.isNull(jarFile)){
@@ -579,9 +579,10 @@ public class FileServiceImpl extends GenericService<File, Long> {
                 .fileType(FileType.of(file.getFileType()))
                 .extendedJarResources(extendedJarResource)
                 .build();
-
         FileDagResponseCommand fileDagResponseCommand = (FileDagResponseCommand) nettyClientService.sendCommand(
-            ClusterType.KUBERNETES,new FileDagCommand(flinkDagRequest), FileDagResponseCommand.class);
+                ClusterType.of(jobConfig.getRunClusterInfo().getClusterType()),
+                new FileDagCommand(flinkDagRequest),
+                FileDagResponseCommand.class);
 
         if(Asserts.isNull(fileDagResponseCommand) || Asserts.isNull(fileDagResponseCommand.getFlinkDagResponse())){
             putMsg(result,Status.COMMUNICATION_ERROR);

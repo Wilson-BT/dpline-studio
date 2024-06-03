@@ -40,4 +40,22 @@ public class TaskRunDynamicWrapper {
         }
         return response;
     }
+    public synchronized Response executeTest(FlinkRequest request) throws Exception {
+        ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
+        // add all flink jars,create and set with a new ClassLoader
+//        ChildFirstClassLoader targetClassLoader = flinkVersionClassLoadUtil.getFlinkClientClassLoader(request);
+//        Thread.currentThread().setContextClassLoader(targetClassLoader);
+        logger.info("Change classLoader...");
+        Response response = null;
+        try {
+            response = this.functionExecutor.apply(request);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        } finally {
+            logger.info("Reset classLoader...");
+            Thread.currentThread().setContextClassLoader(originalClassLoader);
+        }
+        return response;
+    }
+
 }

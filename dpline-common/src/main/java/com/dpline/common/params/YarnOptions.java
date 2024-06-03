@@ -31,7 +31,7 @@ public class YarnOptions {
         private List<String> flinkJarDirPath;
         private String flinkDistJarPath;
 
-        public Builder HadoopHome(String HadoopHome) {
+        public Builder hadoopHome(String HadoopHome) {
             this.HadoopHome = HadoopHome;
             return this;
         }

@@ -14,13 +14,11 @@
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
-        <flink.version>1.16.2</flink.version>
+        <flink.version>1.16.3</flink.version>
     </properties>
 
     <modules>
         <module>dpline-flink-client-1.16</module>
-<!--        <module>dpline-flink-log-1.16</module>-->
-<!--        <module>dpline-app-1.16</module>-->
         <module>dpline-flink-log-kafka2doris-1.16</module>
     </modules>
     <dependencies>

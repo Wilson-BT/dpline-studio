@@ -3,11 +3,11 @@ package com.dpline.yarn.operator.remote;
 import com.dpline.common.enums.ExecStatus;
 import com.dpline.common.util.Asserts;
 import com.dpline.common.util.JSONUtils;
+import com.dpline.common.util.YarnUtil;
 import com.dpline.operator.common.TaskRestUrlStatusConvertor;
 import com.dpline.operator.entity.SniffEvent;
 import com.dpline.yarn.operator.HadoopManager;
 import com.dpline.yarn.operator.metric.YarnAppInfo;
-import com.dpline.yarn.operator.util.YarnUtil;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -145,6 +145,11 @@
             </dependency>
             <dependency>
                 <groupId>com.dpline</groupId>
+                <artifactId>dpline-flink-client-1.17</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.dpline</groupId>
                 <artifactId>dpline-flink-client-core</artifactId>
                 <version>${project.version}</version>
             </dependency>

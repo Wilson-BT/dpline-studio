@@ -2,7 +2,12 @@ package com.dpline.common.util;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
@@ -43,6 +48,23 @@ public class PropertyUtils {
             }
         }
     }
+
+
+    private static synchronized Map<String,String> loadXmlFile(String path) {
+        File file = new File(path);
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder builder = null;
+        try {
+            builder = factory.newDocumentBuilder();
+            Document doc = builder.parse(file);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        return new HashMap<>();
+
+    }
+
 
 
     /**
