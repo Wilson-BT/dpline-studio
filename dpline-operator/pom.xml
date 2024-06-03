@@ -81,9 +81,6 @@
             <groupId>com.dpline</groupId>
             <artifactId>dpline-dao</artifactId>
         </dependency>
-        <dependency>
-            <groupId>com.dpline</groupId>
-            <artifactId>dpline-operator-common</artifactId>
-        </dependency>
+
     </dependencies>
 </project>

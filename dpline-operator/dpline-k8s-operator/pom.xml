@@ -50,6 +50,10 @@
             <groupId>com.dpline</groupId>
             <artifactId>dpline-flink-client-api</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.dpline</groupId>
+            <artifactId>dpline-operator-common</artifactId>
+        </dependency>
     </dependencies>
 
 

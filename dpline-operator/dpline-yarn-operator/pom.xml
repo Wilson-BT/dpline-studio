@@ -8,6 +8,7 @@
         <artifactId>dpline-operator</artifactId>
         <version>0.0.4</version>
     </parent>
+    <packaging>jar</packaging>
 
     <artifactId>dpline-yarn-operator</artifactId>
 
@@ -53,5 +54,32 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <dependency>
+            <groupId>com.dpline</groupId>
+            <artifactId>dpline-operator-common</artifactId>
+        </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addClasspath>true</addClasspath>
+                            <mainClass>com.dpline.k8s.operator.OperatorServer</mainClass> <!-- 你的主类名 -->
+                        </manifest>
+                    </archive>
+                    <excludes>
+                        <exclude>*.yaml</exclude>
+                        <exclude>*.yml</exclude>
+                        <exclude>*.xml</exclude>
+                        <exclude>*.properties</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>

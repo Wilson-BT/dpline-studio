@@ -29,10 +29,10 @@
 <!--            <groupId>com.dpline</groupId>-->
 <!--            <artifactId>dpline-flink-client-1.16</artifactId>-->
 <!--        </dependency>-->
-        <dependency>
-            <groupId>com.dpline</groupId>
-            <artifactId>dpline-flink-client-1.17</artifactId>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>com.dpline</groupId>-->
+<!--            <artifactId>dpline-flink-client-1.17</artifactId>-->
+<!--        </dependency>-->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>

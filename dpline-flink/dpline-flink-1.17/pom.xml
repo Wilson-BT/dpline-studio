@@ -16,7 +16,7 @@
         <maven.compiler.target>8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <flink.version>1.17.2</flink.version>
-        <scope>compile</scope>
+        <scope>provided</scope>
     </properties>
     <modules>
         <module>dpline-flink-client-1.17</module>
@@ -34,6 +34,7 @@
             <groupId>org.apache.flink</groupId>
             <artifactId>flink-table-planner_2.12</artifactId>
             <version>${flink.version}</version>
+            <scope>${scope}</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.flink</groupId>

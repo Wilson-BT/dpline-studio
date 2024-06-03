@@ -17,7 +17,6 @@ import com.dpline.yarn.operator.HadoopManager;
 import com.dpline.yarn.operator.metric.YarnAppInfo;
 import com.dpline.yarn.operator.remote.ApplicationStatusRemoteTrack;
 import com.dpline.yarn.operator.remote.RestStatusRemoteTrack;
-import com.dpline.yarn.operator.util.YarnUtil;
 import org.apache.hadoop.conf.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
